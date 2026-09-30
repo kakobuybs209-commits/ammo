@@ -134,17 +134,16 @@ window.closeRegisterPromoModal = function() {
 
 document.addEventListener('DOMContentLoaded', () => {
 
-    // Auto-show Register Promo Modal on site visit (non-admin)
+    // Auto-show Promo Popup on site visit (non-admin)
     const urlParams = new URLSearchParams(window.location.search);
     const isAdminMode = urlParams.get('admin') === 'true' || sessionStorage.getItem('admin_authenticated') === 'true';
     if (!isAdminMode) {
         setTimeout(() => {
-            const promoModal = document.getElementById('register-promo-modal');
-            if (promoModal) {
-                promoModal.classList.remove('hidden');
-                document.body.classList.add('modal-open');
+            if (typeof showPromoPopup === 'function') {
+                const s = (typeof loadPromoPopupSettings === 'function') ? loadPromoPopupSettings() : {};
+                if (s.triggerHome !== false) showPromoPopup();
             }
-        }, 500);
+        }, 800);
     }
 
     
@@ -221,16 +220,15 @@ document.addEventListener('DOMContentLoaded', () => {
         if (footer) footer.style.display = viewId === 'home-view' ? 'block' : 'none';
 
         // Promo Popup Trigger
-        if (viewId === 'products-view') {
-            if (typeof showPromoPopup === 'function') {
+        if (typeof showPromoPopup === 'function' && typeof loadPromoPopupSettings === 'function') {
+            const s = loadPromoPopupSettings();
+            const isProducts = viewId === 'products-view';
+            const isTool = ['tracking-view','converter-view','qc-view'].includes(viewId);
+            if ((isProducts && s.triggerProducts !== false) || (isTool && s.triggerTools === true)) {
                 showPromoPopup();
-            }
-        } else {
-            if (typeof promoShowTimer !== 'undefined' && promoShowTimer) {
-                clearTimeout(promoShowTimer);
-            }
-            if (typeof closePromoPopup === 'function') {
-                closePromoPopup();
+            } else {
+                if (typeof promoShowTimer !== 'undefined' && promoShowTimer) clearTimeout(promoShowTimer);
+                if (typeof closePromoPopup === 'function') closePromoPopup();
             }
         }
     }
@@ -7989,6 +7987,9 @@ const PROMO_DEFAULTS = {
     showDelay: 3,
     closeDelay: 3,
     oncePerSession: true,
+    triggerHome: true,
+    triggerProducts: true,
+    triggerTools: false,
     position: 'center',
 
     // content
@@ -8269,6 +8270,9 @@ function closePromoPopup() {
 const PROMO_FIELD_MAP = {
     'promo-popup-enabled': 'enabled',
     'promo-once-per-session': 'oncePerSession',
+    'promo-trigger-home': 'triggerHome',
+    'promo-trigger-products': 'triggerProducts',
+    'promo-trigger-tools': 'triggerTools',
     'promo-show-delay': 'showDelay',
     'promo-close-delay': 'closeDelay',
     'promo-position': 'position',
