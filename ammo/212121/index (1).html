@@ -1,0 +1,1904 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ITEMFINDER</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css?v=7027">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Supabase Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Translations -->
+    <script src="translations.js?v=3001"></script>
+    <script type="text/javascript"></script>
+</head>
+<body>
+
+<div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo" id="nav-home-btn" style="cursor: pointer;">ITEMFINDER</div>
+            <nav class="nav-links">
+                <a href="#" id="nav-products-btn"><i class="fa-solid fa-compass"></i> <span data-i18n="nav.products">Produkty</span></a>
+                <a href="#" id="nav-sellers-btn"><i class="fa-solid fa-store"></i> <span data-i18n="nav.sellers">Sprzedawcy</span></a>
+                
+                <div class="nav-dropdown">
+                    <a href="#" class="nav-dropdown-toggle">
+                        <i class="fa-solid fa-wrench"></i> <span data-i18n="nav.tools">Tools</span> <i class="fa-solid fa-chevron-down" style="font-size: 0.7em; margin-left: 2px;"></i>
+                    </a>
+                    <div class="nav-dropdown-menu">
+                        <a href="#" data-view="tracking-view"><i class="fa-solid fa-truck-fast"></i> <span data-i18n="nav.tracking">Tracking</span></a>
+                        <a href="#" data-view="converter-view"><i class="fa-solid fa-link"></i> <span data-i18n="nav.converter">Link Converter</span></a>
+                        <a href="#" data-view="qc-view">📷 <span data-i18n="nav.qc">QC Finder</span></a>
+                    </div>
+                </div>
+                
+                <a href="#" id="nav-guide-btn"><i class="fa-solid fa-graduation-cap"></i> <span data-i18n="nav.guide">Poradnik</span></a>
+            </nav>
+            <div class="header-actions">
+                <button class="icon-btn" id="settings-btn" data-i18n-title="btn.settings" title="Ustawienia">
+                    <i class="fa-solid fa-gear"></i>
+                </button>
+                <!-- Admin login moved to /admin992slg -->
+            </div>
+        </header>
+    </div>
+    
+    <!-- Promo Popup Modal -->
+    <div id="promo-popup-overlay" class="promo-popup-overlay promo-surface hidden">
+        <div id="promo-popup-modal" class="promo-popup-modal">
+            <button id="promo-popup-close" class="promo-popup-close hidden">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <div class="promo-popup-content">
+                <div class="promo-popup-badge" id="promo-badge">
+                    <span id="promo-badge-text">SPECJALNA OFERTA</span>
+                </div>
+                <h2 id="promo-title">Obecnie -50% na wysyłkę w OssBuy!</h2>
+                <p id="promo-description">Zarejestruj się teraz i skorzystaj z tej wyjątkowej okazji przed jej wygaśnięciem.</p>
+                <a href="#" id="promo-cta-button" class="promo-cta-button">
+                    <span id="promo-button-text">Zarejestruj się w OssBuy</span>
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Home View -->
+    <div id="home-view" class="main-view active">
+        <div class="container">
+        <!-- Hero Section -->
+        <section class="hero">
+            <div class="hero-badge">
+                <span class="dot"></span> <span data-i18n="hero.badge">NAJLEPSZY SPREADSHEET W POLSCE</span>
+            </div>
+            <h1><span data-i18n="hero.title.1">Wszystko czego</span><br><span data-i18n="hero.title.2">potrzebujesz</span><br><span data-i18n="hero.title.3">w jednym miejscu.</span></h1>
+            <p class="subtitle"><span id="typewriter-text"></span><span class="cursor">|</span></p>
+            
+            <div class="hero-buttons">
+                <a href="#" class="btn btn-primary" id="hero-explore-btn">
+                    <i class="fa-solid fa-compass"></i> <span data-i18n="btn.explore">Eksploruj Spreadsheet</span>
+                </a>
+                <a href="#" class="btn btn-secondary" id="nav-sellers-hero-btn">
+                    <i class="fa-solid fa-store"></i> <span data-i18n="btn.sellers">Sprzedawcy</span>
+                </a>
+            </div>
+        </section>
+
+    <!-- Main Content - Categories, Search, Grid przeniesione do products-view -->
+
+    </div>
+
+    <!-- Features Section — przepisana -->
+    <section class="home-features">
+        <div class="home-features__header" data-reveal>
+            <span class="home-section-badge" data-i18n="features.badge">FUNKCJE</span>
+            <h2 class="home-section-title" data-i18n="features.title">Wszystko czego potrzebujesz</h2>
+            <p class="home-section-sub" data-i18n="features.subtitle">Kompleksowe narzędzia dla każdego kto kupuje repy</p>
+        </div>
+        <div class="home-features__grid container">
+
+            <div class="hf-card" data-view="products-view" data-reveal data-delay="100" style="cursor:pointer">
+                <div class="hf-card__icon">
+                    <i class="fa-solid fa-box-open"></i>
+                </div>
+                <h3 data-i18n="features.products.title">2000+ Produktów</h3>
+                <p data-i18n="features.products.desc">Największa baza linków. Znajdź buty, ubrania, akcesoria i wszystko inne czego potrzebujesz.</p>
+                <span class="hf-card__link"><span data-i18n="features.products.link">Przeglądaj</span> <i class="fa-solid fa-arrow-right"></i></span>
+            </div>
+
+            <div class="hf-card" data-view="tracking-view" data-reveal data-delay="200" style="cursor:pointer">
+                <div class="hf-card__icon">
+                    <i class="fa-solid fa-truck-fast"></i>
+                </div>
+                <h3 data-i18n="features.tracking.title">Śledzenie Paczek</h3>
+                <p data-i18n="features.tracking.desc">Śledź swoje zamówienia w jednym miejscu. Wpisz numer i sprawdź status przesyłki.</p>
+                <span class="hf-card__link"><span data-i18n="features.tracking.link">Śledź</span> <i class="fa-solid fa-arrow-right"></i></span>
+            </div>
+
+            <div class="hf-card" data-view="converter-view" data-reveal data-delay="300" style="cursor:pointer">
+                <div class="hf-card__icon">
+                    <i class="fa-solid fa-link"></i>
+                </div>
+                <h3 data-i18n="features.converter.title">Link Converter</h3>
+                <p data-i18n="features.converter.desc">Zamień link z Taobao, Weidian lub 1688 na link agenta jednym kliknięciem.</p>
+                <span class="hf-card__link"><span data-i18n="features.converter.link">Konwertuj</span> <i class="fa-solid fa-arrow-right"></i></span>
+            </div>
+
+            <div class="hf-card" data-view="qc-view" data-reveal data-delay="400" style="cursor:pointer">
+                <div class="hf-card__icon">
+                    <span style="font-size:1.2rem;line-height:1;">📷</span>
+                </div>
+                <h3 data-i18n="features.qc.title">QC Finder</h3>
+                <p data-i18n="features.qc.desc">Znajdź zdjęcia QC dla swoich produktów z wielu źródeł przed zakupem.</p>
+                <span class="hf-card__link"><span data-i18n="features.qc.link">Szukaj</span> <i class="fa-solid fa-arrow-right"></i></span>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- Tools Section — przepisana -->
+    <section class="home-tools">
+        <div class="home-tools__header container" data-reveal>
+            <span class="home-section-badge" data-i18n="tools.badge">NARZĘDZIA</span>
+            <h2 class="home-section-title" data-i18n="tools.title">Produktowe Narzędzia</h2>
+            <p class="home-section-sub" data-i18n="tools.subtitle">Wszystkie narzędzia których potrzebujesz, całkowicie za darmo</p>
+        </div>
+
+        <div class="home-tools__list container">
+
+            <a class="ht-row" href="#" data-view="tracking-view" data-reveal data-delay="100">
+                <div class="ht-row__left">
+                    <div class="ht-row__icon"><i class="fa-solid fa-truck-fast"></i></div>
+                    <div class="ht-row__text">
+                        <h3 data-i18n="tools.tracking.title">Śledzenie Paczek</h3>
+                        <p data-i18n="tools.tracking.desc">Śledź przesyłki od dowolnego przewoźnika w jednym miejscu</p>
+                    </div>
+                </div>
+                <div class="ht-row__arrow"><i class="fa-solid fa-arrow-right"></i></div>
+            </a>
+
+            <a class="ht-row" href="#" data-view="converter-view" data-reveal data-delay="200">
+                <div class="ht-row__left">
+                    <div class="ht-row__icon"><i class="fa-solid fa-link"></i></div>
+                    <div class="ht-row__text">
+                        <h3 data-i18n="tools.converter.title">Link Converter</h3>
+                        <p data-i18n="tools.converter.desc">Konwertuj linki Taobao, Weidian i 1688 na linki agentów</p>
+                    </div>
+                </div>
+                <div class="ht-row__arrow"><i class="fa-solid fa-arrow-right"></i></div>
+            </a>
+
+            <a class="ht-row" href="#" data-view="qc-view" data-reveal data-delay="300">
+                <div class="ht-row__left">
+                    <div class="ht-row__icon"><span style="font-size:1.1rem;line-height:1;">📷</span></div>
+                    <div class="ht-row__text">
+                        <h3 data-i18n="tools.qc.title">QC Finder</h3>
+                        <p data-i18n="tools.qc.desc">Znajdź zdjęcia kontroli jakości dla produktów z Taobao i Tmall</p>
+                    </div>
+                </div>
+                <div class="ht-row__arrow"><i class="fa-solid fa-arrow-right"></i></div>
+            </a>
+
+        </div>
+
+        <!-- Community Banner -->
+        <div class="home-discord container" data-reveal data-reveal="scale">
+            <div class="home-discord__bg-grid"></div>
+            <div class="home-discord__inner">
+                <div class="home-discord__icon"><i class="fa-brands fa-discord"></i></div>
+                <div class="home-discord__text">
+                    <h3 data-i18n="discord.title">Dołącz do społeczności</h3>
+                    <p data-i18n="discord.desc">Najlepsza społeczność Reps w Polsce — Discord, porady, najnowsze linki</p>
+                </div>
+                <a href="#" class="home-discord__btn" data-i18n="discord.button">Dołącz do Discorda</a>
+            </div>
+        </div>
+    </section>
+    </div> <!-- /home-view -->
+
+    <!-- Products View -->
+    <div id="products-view" class="main-view hidden">
+
+        <!-- Page Header -->
+        <div class="pv-header">
+            <h1 class="pv-title">Explore Products</h1>
+        </div>
+
+        <div class="pv-wrap">
+
+            <!-- Search bar -->
+            <div class="pv-search-wrap">
+                <i class="fa-solid fa-magnifying-glass pv-search-icon"></i>
+                <input type="text" id="products-search" class="pv-search-input" placeholder="Search product...">
+            </div>
+
+            <!-- Toolbar row -->
+            <div class="pv-toolbar">
+                <div class="pv-filters">
+
+                    <!-- Categories dropdown (z ikonami jak na screenie) -->
+                    <div class="pv-filter-dropdown" id="pv-cat-dropdown">
+                        <button class="pv-filter-btn pv-cat-toggle" id="pv-cat-btn">
+                            <i class="fa-solid fa-border-all"></i>
+                            <span id="pv-cat-label">All Categories</span>
+                            <i class="fa-solid fa-chevron-up-down pv-chev"></i>
+                        </button>
+                        <div class="pv-dropdown-menu" id="pv-cat-menu">
+                            <!-- search inside dropdown -->
+                            <div class="pv-drop-search-wrap">
+                                <i class="fa-solid fa-magnifying-glass"></i>
+                                <input type="text" class="pv-drop-search" placeholder="Search category...">
+                            </div>
+                            <button class="pv-drop-item active" data-cat="All" data-icon="fa-border-all">
+                                <i class="fa-solid fa-border-all pv-drop-icon"></i>
+                                <span>All Categories</span>
+                                <i class="fa-solid fa-check pv-drop-check"></i>
+                            </button>
+                            <button class="pv-drop-item" data-cat="Shoes" data-icon="fa-shoe-prints">
+                                <i class="fa-solid fa-shoe-prints pv-drop-icon"></i>
+                                <span>Shoes</span>
+                                <i class="fa-solid fa-check pv-drop-check"></i>
+                            </button>
+                            <button class="pv-drop-item" data-cat="Jackets" data-icon="fa-vest">
+                                <i class="fa-solid fa-vest pv-drop-icon"></i>
+                                <span>Jacket</span>
+                                <i class="fa-solid fa-check pv-drop-check"></i>
+                            </button>
+                            <button class="pv-drop-item" data-cat="Jackets" data-icon="fa-jacket">
+                                <i class="fa-solid fa-person-shelter pv-drop-icon"></i>
+                                <span>Down Jacket</span>
+                                <i class="fa-solid fa-check pv-drop-check"></i>
+                            </button>
+                            <button class="pv-drop-item" data-cat="Hoodies" data-icon="fa-user-ninja">
+                                <i class="fa-solid fa-user-ninja pv-drop-icon"></i>
+                                <span>Hoodie</span>
+                                <i class="fa-solid fa-check pv-drop-check"></i>
+                            </button>
+                            <button class="pv-drop-item" data-cat="T-shirts" data-icon="fa-shirt">
+                                <i class="fa-solid fa-shirt pv-drop-icon"></i>
+                                <span>Sweatshirt</span>
+                                <i class="fa-solid fa-check pv-drop-check"></i>
+                            </button>
+                            <button class="pv-drop-item" data-cat="T-shirts" data-icon="fa-tshirt">
+                                <i class="fa-solid fa-tshirt pv-drop-icon"></i>
+                                <span>Sweater</span>
+                                <i class="fa-solid fa-check pv-drop-check"></i>
+                            </button>
+                            <button class="pv-drop-item" data-cat="T-shirts" data-icon="fa-shirt">
+                                <i class="fa-solid fa-shirt pv-drop-icon"></i>
+                                <span>Tee</span>
+                                <i class="fa-solid fa-check pv-drop-check"></i>
+                            </button>
+                            <button class="pv-drop-item" data-cat="Pants" data-icon="fa-socks">
+                                <i class="fa-solid fa-socks pv-drop-icon"></i>
+                                <span>Pants</span>
+                                <i class="fa-solid fa-check pv-drop-check"></i>
+                            </button>
+                            <button class="pv-drop-item" data-cat="Shorts" data-icon="fa-person-running">
+                                <i class="fa-solid fa-person-running pv-drop-icon"></i>
+                                <span>Shorts</span>
+                                <i class="fa-solid fa-check pv-drop-check"></i>
+                            </button>
+                            <button class="pv-drop-item" data-cat="Accessories" data-icon="fa-hat-cowboy">
+                                <i class="fa-solid fa-hat-cowboy pv-drop-icon"></i>
+                                <span>Accessories</span>
+                                <i class="fa-solid fa-check pv-drop-check"></i>
+                            </button>
+                            <button class="pv-drop-item" data-cat="Electronics" data-icon="fa-headphones">
+                                <i class="fa-solid fa-headphones pv-drop-icon"></i>
+                                <span>Electronics</span>
+                                <i class="fa-solid fa-check pv-drop-check"></i>
+                            </button>
+                            <button class="pv-drop-item" data-cat="Watches" data-icon="fa-clock">
+                                <i class="fa-solid fa-clock pv-drop-icon"></i>
+                                <span>Watches</span>
+                                <i class="fa-solid fa-check pv-drop-check"></i>
+                            </button>
+                            <button class="pv-drop-item" data-cat="Bags & Backpacks" data-icon="fa-bag-shopping">
+                                <i class="fa-solid fa-bag-shopping pv-drop-icon"></i>
+                                <span>Bags &amp; Backpacks</span>
+                                <i class="fa-solid fa-check pv-drop-check"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="pv-filter-dropdown" id="pv-price-dropdown">
+                        <button class="pv-filter-btn" id="pv-price-btn">
+                            <i class="fa-solid fa-tag"></i> <span id="pv-price-label">Price</span>
+                            <i class="fa-solid fa-chevron-down pv-chev"></i>
+                        </button>
+                        <div class="pv-dropdown-menu" id="pv-price-menu">
+                            <button class="pv-drop-item active" data-price="all">
+                                <span>All Prices</span>
+                                <i class="fa-solid fa-check pv-drop-check"></i>
+                            </button>
+                            <button class="pv-drop-item" data-price="0-50">
+                                <span class="price-range-text">Under <span class="price-val">50</span> <span class="price-curr">PLN</span></span>
+                                <i class="fa-solid fa-check pv-drop-check"></i>
+                            </button>
+                            <button class="pv-drop-item" data-price="50-100">
+                                <span class="price-range-text"><span class="price-val">50</span> - <span class="price-val">100</span> <span class="price-curr">PLN</span></span>
+                                <i class="fa-solid fa-check pv-drop-check"></i>
+                            </button>
+                            <button class="pv-drop-item" data-price="100-200">
+                                <span class="price-range-text"><span class="price-val">100</span> - <span class="price-val">200</span> <span class="price-curr">PLN</span></span>
+                                <i class="fa-solid fa-check pv-drop-check"></i>
+                            </button>
+                            <button class="pv-drop-item" data-price="200-500">
+                                <span class="price-range-text"><span class="price-val">200</span> - <span class="price-val">500</span> <span class="price-curr">PLN</span></span>
+                                <i class="fa-solid fa-check pv-drop-check"></i>
+                            </button>
+                            <button class="pv-drop-item" data-price="500+">
+                                <span class="price-range-text">Over <span class="price-val">500</span> <span class="price-curr">PLN</span></span>
+                                <i class="fa-solid fa-check pv-drop-check"></i>
+                            </button>
+                            <div class="pv-price-custom">
+                                <div class="pv-price-custom-label">Custom Range</div>
+                                <div class="pv-price-custom-inputs">
+                                    <input type="number" id="price-min" class="pv-price-input" placeholder="Min" min="0">
+                                    <span class="pv-price-separator">-</span>
+                                    <input type="number" id="price-max" class="pv-price-input" placeholder="Max" min="0">
+                                </div>
+                                <button class="pv-price-apply-btn" id="apply-custom-price">Apply</button>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="pv-filter-btn pv-filter-pill" data-filter="women">
+                        <i class="fa-solid fa-person-dress"></i> Women
+                    </button>
+                    <button class="pv-filter-btn pv-filter-pill active" data-filter="recommended">
+                        <i class="fa-solid fa-star"></i> Recommended
+                    </button>
+                    <button class="pv-filter-btn pv-filter-pill" data-filter="newest">
+                        <i class="fa-regular fa-clock"></i> Newest
+                    </button>
+                </div>
+
+                <div class="pv-sort">
+                    <div class="pv-filter-dropdown" id="pv-sort-dropdown">
+                        <button class="pv-filter-btn" id="pv-sort-btn">
+                            <i class="fa-solid fa-arrow-down-a-z"></i> <span id="pv-sort-label">Name: A-Z</span>
+                            <i class="fa-solid fa-chevron-down pv-chev"></i>
+                        </button>
+                        <div class="pv-dropdown-menu" id="pv-sort-menu">
+                            <button class="pv-drop-item active" data-sort="name-asc">
+                                <span>Name: A-Z</span>
+                                <i class="fa-solid fa-check pv-drop-check"></i>
+                            </button>
+                            <button class="pv-drop-item" data-sort="name-desc">
+                                <span>Name: Z-A</span>
+                                <i class="fa-solid fa-check pv-drop-check"></i>
+                            </button>
+                            <button class="pv-drop-item" data-sort="price-asc">
+                                <span>Price: Low to High</span>
+                                <i class="fa-solid fa-check pv-drop-check"></i>
+                            </button>
+                            <button class="pv-drop-item" data-sort="price-desc">
+                                <span>Price: High to Low</span>
+                                <i class="fa-solid fa-check pv-drop-check"></i>
+                            </button>
+                            <button class="pv-drop-item" data-sort="newest">
+                                <span>Newest First</span>
+                                <i class="fa-solid fa-check pv-drop-check"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Products Grid -->
+            <section id="products-grid"></section>
+
+            <!-- Infinity scroll sentinel + loader -->
+            <div id="products-loader" class="products-loader hidden">
+                <span class="loader-dot"></span>
+                <span class="loader-dot"></span>
+                <span class="loader-dot"></span>
+            </div>
+            <div id="scroll-sentinel"></div>
+
+        </div>
+    </div>
+
+    <!-- Sellers View (Hidden by default) -->
+    <div id="sellers-view" class="main-view hidden">
+        
+        <!-- Coming Soon Message -->
+        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 70vh; padding: 2rem; text-align: center;">
+            <h1 style="color: #fff; font-size: 3rem; margin-bottom: 1rem; font-weight: 900; letter-spacing: -0.02em;">Wkrótce</h1>
+            <p style="color: rgba(255,255,255,0.5); font-size: 1.2rem; max-width: 500px;">Lista polecanych sprzedawców będzie dostępna już niedługo</p>
+        </div>
+
+    </div>
+
+    <!-- Admin Panel 2.0 (Hidden by default) -->
+    <div class="admin-panel hidden" id="admin-panel">
+        <aside class="admin-sidebar">
+            <div class="admin-logo">
+                <span class="admin-logo__word">SWAG<b>REPS</b></span>
+                <span class="admin-logo__tag">Panel administracyjny</span>
+            </div>
+            <nav class="admin-nav">
+                <a href="#" class="admin-link active" data-target="dashboard">
+                    <i class="fa-solid fa-chart-pie"></i> Dashboard
+                </a>
+                <a href="#" class="admin-link" data-target="products">
+                    <i class="fa-solid fa-box-open"></i> Produkty
+                </a>
+                <a href="#" class="admin-link" data-target="sellers">
+                    <i class="fa-solid fa-store"></i> Sprzedawcy
+                </a>
+                <a href="#" class="admin-link" data-target="settings">
+                    <i class="fa-solid fa-gear"></i> Ustawienia
+                </a>
+            </nav>
+            <div class="admin-bottom">
+                <button id="admin-logout-btn" class="btn btn-secondary logout-btn">
+                    <i class="fa-solid fa-right-from-bracket"></i> Wyloguj
+                </button>
+            </div>
+        </aside>
+
+        <main class="admin-main">
+            <!-- Global Admin Top Bar -->
+            <div class="admin-topbar">
+                <div class="admin-profile-section">
+                    <button class="notif-btn">
+                        <i class="fa-regular fa-bell"></i>
+                        <span class="notif-dot"></span>
+                    </button>
+                    <div class="admin-profile-card">
+                        <img src="https://ui-avatars.com/api/?name=Admin&background=3f3f46&color=fff&rounded=true&bold=true" alt="Admin Avatar" class="admin-avatar">
+                        <div class="admin-info">
+                            <span class="admin-name">Administrator</span>
+                            <span class="admin-role"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dashboard View -->
+            <div class="admin-view active" id="view-dashboard">
+                <header class="admin-header">
+                    <div>
+                        <h2>Dashboard</h2>
+                        <p class="text-muted">Przegląd statystyk i aktywności</p>
+                    </div>
+                    <button class="btn btn-primary"><i class="fa-solid fa-download"></i> Eksportuj dane</button>
+                </header>
+                
+                <div class="dashboard-content-grid">
+                    <div class="chart-section glass-card">
+                        <div class="chart-header">
+                            <h3>Wizyty strony</h3>
+                            <div class="chart-period-btns">
+                                <button class="period-btn active" data-period="day">Dzień</button>
+                                <button class="period-btn" data-period="week">Tydzień</button>
+                                <button class="period-btn" data-period="month">Miesiąc</button>
+                                <button class="period-btn" data-period="custom">Własny okres</button>
+                            </div>
+                        </div>
+                        
+                        <!-- Custom Period Picker (hidden by default) -->
+                        <div class="custom-period-picker hidden" id="custom-period-picker">
+                            <div class="period-inputs">
+                                <div class="period-input-group">
+                                    <label>Od:</label>
+                                    <input type="date" id="period-start" class="period-date-input">
+                                </div>
+                                <div class="period-input-group">
+                                    <label>Do:</label>
+                                    <input type="date" id="period-end" class="period-date-input">
+                                </div>
+                                <button class="btn btn-primary btn-sm" id="apply-custom-period">Zastosuj</button>
+                            </div>
+                        </div>
+                        
+                        <div class="line-chart-container">
+                            <!-- Everything inside is drawn by updateChartVisuals().
+                                 The previous static markup used coordinates up to
+                                 y=330 inside a 240-high viewBox, so it rendered
+                                 outside the visible area. -->
+                            <svg class="line-chart" viewBox="0 0 800 260" preserveAspectRatio="xMidYMid meet">
+                                <defs>
+                                    <linearGradient id="areaGradient" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="0%" stop-color="#ffffff" stop-opacity="0.16" />
+                                        <stop offset="100%" stop-color="#ffffff" stop-opacity="0" />
+                                    </linearGradient>
+                                </defs>
+
+                                <g class="chart-grid"></g>
+                                <path class="line-area" fill="url(#areaGradient)" d=""/>
+                                <path class="line-path" fill="none" stroke="#e5e5e5" stroke-width="2"
+                                      stroke-linecap="round" stroke-linejoin="round" d=""/>
+                            </svg>
+
+                            <!-- Tooltip -->
+                            <div class="chart-tooltip hidden" id="chart-tooltip">
+                                <div class="tooltip-day"></div>
+                                <div class="tooltip-data">
+                                    <div class="tooltip-row">
+                                        <span class="tooltip-label">Wizyty</span>
+                                        <span class="tooltip-value visits-value"></span>
+                                    </div>
+                                    <div class="tooltip-row">
+                                        <span class="tooltip-label">Unikalni użytkownicy</span>
+                                        <span class="tooltip-value users-value"></span>
+                                    </div>
+                                    <div class="tooltip-row">
+                                        <span class="tooltip-label">Produkty</span>
+                                        <span class="tooltip-value products-value"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Products View -->
+            <div class="admin-view" id="view-products">
+                <header class="admin-header">
+                    <div>
+                        <h2>Spreadsheet (Produkty)</h2>
+                    </div>
+                    <div style="display: flex; gap: 1rem;">
+                        <button class="btn btn-secondary" id="bulk-import-btn" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);"><i class="fa-solid fa-file-import"></i> Bulk Import</button>
+                        <button class="btn btn-secondary" id="export-products-btn" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);"><i class="fa-solid fa-file-export"></i> Eksport CSV</button>
+                        <button class="btn btn-primary glow-btn" id="dodaj-przedmiot-btn"><i class="fa-solid fa-plus"></i> Dodaj Przedmiot</button>
+                    </div>
+                </header>
+                
+                <div class="admin-filters glass-card">
+                    <div class="search-bar admin-search-bar">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <input type="text" placeholder="Szukaj produktu...">
+                    </div>
+                    <div class="custom-select">
+                        <select>
+                            <option value="all">Wszystkie kategorie</option>
+                            <option value="shoes">Buty</option>
+                            <option value="clothing">Odzież</option>
+                            <option value="accessories">Akcesoria</option>
+                            <option value="electronics">Elektronika</option>
+                            <option value="jewelry">Biżuteria</option>
+                            <option value="watches">Zegarki</option>
+                            <option value="bags">Torby</option>
+                            
+                        </select>
+                    </div>
+                    <div class="custom-select">
+                        <select>
+                            <option value="all">Status: Dowolny</option>
+                            <option value="active">In Stock</option>
+                            <option value="dead">Dead Link</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="table-container glass-card">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Przedmiot</th>
+                                <th>Kategoria</th>
+                                <th>Cena</th>
+                                <th>Status</th>
+                                <th>Kliknięcia</th>
+                                <th>Akcje</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admin-products-tbody">
+                            <!-- Products będą dynamicznie ładowane przez JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Sellers Admin View -->
+            <div class="admin-view" id="view-sellers">
+                <header class="admin-header">
+                    <div>
+                        <h2>Sprzedawcy</h2>
+                        <p class="text-muted">Zarządzaj listą polecanych sprzedawców</p>
+                    </div>
+                    <button class="btn btn-primary" id="open-add-seller-btn">
+                        <i class="fa-solid fa-plus"></i> Dodaj Sprzedawcę
+                    </button>
+                </header>
+
+                <!-- Search sellers admin -->
+                <div class="admin-filters glass-card" style="margin-bottom:1.5rem;">
+                    <div class="search-bar admin-search-bar" style="flex:1">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <input type="text" id="admin-sellers-search" placeholder="Szukaj sprzedawcy...">
+                    </div>
+                </div>
+
+                <div class="table-container glass-card">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Sprzedawca</th>
+                                <th>Marki</th>
+                                <th>Link</th>
+                                <th>Akcje</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admin-sellers-tbody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Add Seller Modal -->
+            <div class="modal-overlay hidden" id="add-seller-modal">
+                <div class="modal-content" style="max-width:500px;">
+                    <div class="modal-header">
+                        <h2><i class="fa-solid fa-store"></i> Dodaj Sprzedawcę</h2>
+                        <button class="close-btn" id="close-add-seller"><i class="fa-solid fa-xmark"></i></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="add-seller-form" onsubmit="adminAddSeller(event)">
+                            <div class="input-group" style="margin-bottom:1rem;">
+                                <label>Nazwa sprzedawcy</label>
+                                <div class="input-wrapper">
+                                    <i class="fa-solid fa-user"></i>
+                                    <input type="text" id="seller-name" required placeholder="np. 3125Tiger">
+                                </div>
+                            </div>
+                            <div class="input-group" style="margin-bottom:1rem;">
+                                <label>Opis</label>
+                                <div class="input-wrapper">
+                                    <i class="fa-solid fa-align-left"></i>
+                                    <input type="text" id="seller-desc-input" required placeholder="Krótki opis sprzedawcy...">
+                                </div>
+                            </div>
+                            <div class="input-group" style="margin-bottom:1rem;">
+                                <label>Marki (oddzielone przecinkami)</label>
+                                <div class="input-wrapper">
+                                    <i class="fa-solid fa-tags"></i>
+                                    <input type="text" id="seller-brands" required placeholder="Nike, Adidas, Supreme...">
+                                </div>
+                            </div>
+                            <div class="input-group" style="margin-bottom:1.5rem;">
+                                <label>Link do sklepu</label>
+                                <div class="input-wrapper">
+                                    <i class="fa-solid fa-link"></i>
+                                    <input type="url" id="seller-link" required placeholder="https://weidian.com/...">
+                                </div>
+                            </div>
+                            <div style="display:flex;gap:0.75rem;justify-content:flex-end;">
+                                <button type="button" class="btn btn-secondary" onclick="document.getElementById('add-seller-modal').classList.add('hidden')">Anuluj</button>
+                                <button type="submit" class="btn btn-primary"><i class="fa-solid fa-check"></i> Dodaj</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Add Product Method Choice Modal -->
+            <div class="modal-overlay hidden" id="add-method-modal">
+                <div class="modal-content" style="max-width: 800px;">
+                    <div class="modal-header">
+                        <h3><i class="fa-solid fa-plus"></i> Dodaj Produkty</h3>
+                        <button class="close-btn" id="close-method-modal"><i class="fa-solid fa-xmark"></i></button>
+                    </div>
+                    <div class="modal-body" style="padding: 2rem;">
+                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem;">
+                            <!-- Scraper Card -->
+                            <div class="add-method-card" id="method-scraper" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 3rem 2rem; cursor: pointer; transition: all 0.3s; text-align: center;">
+                                <div style="font-size: 3rem; margin-bottom: 1rem;">🚀</div>
+                                <h3 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 0.5rem; color: #fff;">Add via</h3>
+                                <h3 style="font-size: 1.5rem; font-weight: 700; color: #fff;">Scraper</h3>
+                                <p style="color: #a3a3a3; font-size: 0.9rem; margin-top: 1rem;">Wklej link i automatycznie pobierz dane produktu</p>
+                            </div>
+                            
+                            <!-- Bulk Import Card -->
+                            <div class="add-method-card" id="method-bulk" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 3rem 2rem; cursor: pointer; transition: all 0.3s; text-align: center;">
+                                <div style="font-size: 3rem; margin-bottom: 1rem;">📦</div>
+                                <h3 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 0.5rem; color: #fff;">Bulk</h3>
+                                <h3 style="font-size: 1.5rem; font-weight: 700; color: #fff;">Import</h3>
+                                <p style="color: #a3a3a3; font-size: 0.9rem; margin-top: 1rem;">Importuj wiele produktów z pliku CSV/JSON</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Add Product Modal (Manual/Scraper) -->
+            <div class="modal-overlay hidden" id="add-product-modal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3><i class="fa-solid fa-plus"></i> Dodaj Nowy Produkt</h3>
+                        <button class="modal-close" onclick="closeAddProductModal()"><i class="fa-solid fa-xmark"></i></button>
+                    </div>
+                    <form id="add-product-form" class="apf" onsubmit="addProduct(event)">
+                        <div class="apf-field">
+                            <label class="apf-label" for="product-name">Nazwa produktu</label>
+                            <input class="apf-input" type="text" id="product-name" required placeholder="np. Nike Air Jordan 1" autocomplete="off">
+                        </div>
+
+                        <div class="apf-grid">
+                            <div class="apf-field">
+                                <label class="apf-label" for="product-price">Cena (¥ CNY)</label>
+                                <input class="apf-input" type="number" id="product-price" required placeholder="199" step="0.01" min="0">
+                            </div>
+
+                            <div class="apf-field">
+                                <label class="apf-label" for="product-status">Status</label>
+                                <select class="apf-input apf-select" id="product-status" required>
+                                    <option value="active">Aktywny</option>
+                                    <option value="dead">Martwy link</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="apf-field">
+                            <div class="apf-labelrow">
+                                <label class="apf-label" for="product-category">Kategoria</label>
+                                <span class="apf-auto" id="product-category-auto">auto</span>
+                            </div>
+                            <select class="apf-input apf-select" id="product-category" required>
+                                <option value="">Wybierz kategorię</option>
+                                <option value="Shoes">Shoes</option>
+                                <option value="Hoodies">Hoodies</option>
+                                <option value="T-shirts">T-shirts</option>
+                                <option value="Pants">Pants</option>
+                                <option value="Shorts">Shorts</option>
+                                <option value="Jackets">Jackets</option>
+                                <option value="Sets">Sets</option>
+                                <option value="Accessories">Accessories</option>
+                                <option value="Electronics">Electronics</option>
+                                <option value="Bags &amp; Backpacks">Bags &amp; Backpacks</option>
+                            </select>
+                            <p class="apf-hint">Rozpoznawana z nazwy. Wybierz ręcznie, aby nadpisać.</p>
+                        </div>
+
+                        <div class="apf-field">
+                            <label class="apf-label" for="product-image">URL obrazka</label>
+                            <input class="apf-input" type="url" id="product-image" required placeholder="https://...">
+                        </div>
+
+                        <div class="apf-field">
+                            <label class="apf-label" for="product-link">Link do produktu</label>
+                            <input class="apf-input" type="url" id="product-link" required placeholder="https://weidian.com/...">
+                        </div>
+
+                        <div class="apf-switchrow">
+                            <div class="apf-switchrow__text">
+                                <span class="apf-switchrow__title">Produkt polecany</span>
+                                <p class="apf-hint">Wyróżniony na stronie głównej</p>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="product-popular">
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+
+                        <div class="apf-actions">
+                            <button type="button" class="aset-btn aset-btn--ghost" onclick="closeAddProductModal()">Anuluj</button>
+                            <button type="submit" class="aset-btn aset-btn--primary" id="add-product-submit">Dodaj produkt</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Settings Admin View -->
+            <div class="admin-view" id="view-settings">
+                <header class="admin-header">
+                    <div>
+                        <h2>Ustawienia</h2>
+                        <p class="text-muted">Konfiguracja strony i panelu</p>
+                    </div>
+                </header>
+
+                <!-- Section navigation -->
+                <nav class="aset-nav" role="tablist" aria-label="Sekcje ustawień">
+                    <button type="button" class="aset-nav__tab active" data-pane="popup" role="tab" aria-selected="true">
+                        <i class="fa-solid fa-rectangle-ad"></i> <span>Pop-up</span>
+                    </button>
+                    <button type="button" class="aset-nav__tab" data-pane="agents" role="tab" aria-selected="false">
+                        <i class="fa-solid fa-store"></i> <span>Agenci</span>
+                    </button>
+                    <button type="button" class="aset-nav__tab" data-pane="social" role="tab" aria-selected="false">
+                        <i class="fa-solid fa-share-nodes"></i> <span>Social</span>
+                    </button>
+                </nav>
+
+                <div class="aset-pane active" id="aset-pane-popup" role="tabpanel">
+                <div class="aset-layout">
+                <!-- Promo Popup Settings Card -->
+                <div class="aset-card">
+                    <div class="aset-card__head">
+                        <div class="aset-card__headtext">
+                            <h3 class="aset-card__title">Pop-up promocyjny</h3>
+                            <p class="aset-card__desc">Jednorazowy komunikat pokazywany odwiedzającym po wejściu na stronę</p>
+                        </div>
+                        <label class="toggle-switch" title="Włącz lub wyłącz pop-up">
+                            <input type="checkbox" id="promo-popup-enabled" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+
+                    <form id="promo-popup-settings-form" onsubmit="savePromoPopupSettings(event)">
+                        <!-- Behaviour -->
+                        <section class="aset-section">
+                            <h4 class="aset-section__title">Zachowanie</h4>
+                            <div class="aset-grid aset-grid--3">
+                                <div class="aset-field">
+                                    <label class="aset-field__label" for="promo-show-delay">Opóźnienie pop-upu</label>
+                                    <input class="aset-input" type="number" id="promo-show-delay" value="3" min="0" max="120" step="0.5" required>
+                                    <p class="aset-field__hint">Sekundy od wejścia na stronę</p>
+                                </div>
+                                <div class="aset-field">
+                                    <label class="aset-field__label" for="promo-close-delay">Opóźnienie zamknięcia</label>
+                                    <input class="aset-input" type="number" id="promo-close-delay" value="3" min="0" max="120" step="0.5" required>
+                                    <p class="aset-field__hint">Sekundy do pokazania krzyżyka</p>
+                                </div>
+                                <div class="aset-field">
+                                    <label class="aset-field__label" for="promo-position">Pozycja na ekranie</label>
+                                    <select class="aset-input aset-select" id="promo-position">
+                                        <option value="center">Środek</option>
+                                        <option value="top">Góra</option>
+                                        <option value="bottom">Dół</option>
+                                        <option value="bottom-right">Prawy dolny róg</option>
+                                        <option value="bottom-left">Lewy dolny róg</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="aset-field">
+                                <div class="aset-switchrow">
+                                    <div class="aset-switchrow__text">
+                                        <span class="aset-switchrow__title">Tylko raz na sesję</span>
+                                        <p class="aset-switchrow__hint">Wyłącz, aby pop-up wracał przy każdym odświeżeniu</p>
+                                    </div>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" id="promo-once-per-session" checked>
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+                        </section>
+
+                        <!-- Content Settings -->
+                        <section class="aset-section">
+                            <h4 class="aset-section__title">Treść</h4>
+
+                            <div class="aset-field">
+                                <label class="aset-field__label" for="promo-badge-text-input">Etykieta</label>
+                                <input class="aset-input" type="text" id="promo-badge-text-input" value="SPECJALNA OFERTA" maxlength="40">
+                            </div>
+
+                            <div class="aset-field">
+                                <div class="aset-switchrow">
+                                    <div class="aset-switchrow__text">
+                                        <span class="aset-switchrow__title">Pokaż etykietę</span>
+                                        <p class="aset-switchrow__hint">Mały napis nad nagłówkiem</p>
+                                    </div>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" id="promo-badge-visible" checked>
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="aset-field">
+                                <label class="aset-field__label" for="promo-title-input">Nagłówek</label>
+                                <input class="aset-input" type="text" id="promo-title-input" value="Obecnie -50% na wysyłkę w OssBuy!" required>
+                            </div>
+
+                            <div class="aset-field">
+                                <label class="aset-field__label" for="promo-description-input">Opis</label>
+                                <textarea class="aset-input aset-textarea" id="promo-description-input" rows="3" required>Zarejestruj się teraz i skorzystaj z tej wyjątkowej okazji przed jej wygaśnięciem.</textarea>
+                            </div>
+
+                            <div class="aset-grid aset-grid--2">
+                                <div class="aset-field">
+                                    <label class="aset-field__label" for="promo-button-text-input">Tekst przycisku</label>
+                                    <input class="aset-input" type="text" id="promo-button-text-input" value="Zarejestruj się w OssBuy" required>
+                                </div>
+                                <div class="aset-field">
+                                    <label class="aset-field__label" for="promo-link-input">Adres docelowy</label>
+                                    <input class="aset-input" type="url" id="promo-link-input" value="https://ossbuy.com" required>
+                                </div>
+                            </div>
+                        </section>
+
+                        <!-- Shape & Layout -->
+                        <section class="aset-section">
+                            <h4 class="aset-section__title">Kształt i układ</h4>
+
+                            <div class="aset-grid aset-grid--3">
+                                <div class="aset-field">
+                                    <div class="aset-field__labelrow">
+                                        <label class="aset-field__label" for="promo-modal-width">Szerokość okna</label>
+                                        <span class="aset-field__value" id="promo-modal-width-val">440px</span>
+                                    </div>
+                                    <input class="aset-range" type="range" id="promo-modal-width" min="280" max="900" step="10" value="440">
+                                </div>
+
+                                <div class="aset-field">
+                                    <div class="aset-field__labelrow">
+                                        <label class="aset-field__label" for="promo-modal-radius">Zaokrąglenie okna</label>
+                                        <span class="aset-field__value" id="promo-modal-radius-val">16px</span>
+                                    </div>
+                                    <input class="aset-range" type="range" id="promo-modal-radius" min="0" max="40" step="1" value="16">
+                                </div>
+
+                                <div class="aset-field">
+                                    <div class="aset-field__labelrow">
+                                        <label class="aset-field__label" for="promo-modal-padding">Odstępy wewnętrzne</label>
+                                        <span class="aset-field__value" id="promo-modal-padding-val">44px</span>
+                                    </div>
+                                    <input class="aset-range" type="range" id="promo-modal-padding" min="16" max="80" step="2" value="44">
+                                </div>
+
+                                <div class="aset-field">
+                                    <div class="aset-field__labelrow">
+                                        <label class="aset-field__label" for="promo-title-size">Wielkość nagłówka</label>
+                                        <span class="aset-field__value" id="promo-title-size-val">1.9rem</span>
+                                    </div>
+                                    <input class="aset-range" type="range" id="promo-title-size" min="1" max="3.5" step="0.05" value="1.9">
+                                </div>
+
+                                <div class="aset-field">
+                                    <div class="aset-field__labelrow">
+                                        <label class="aset-field__label" for="promo-badge-radius">Zaokrąglenie etykiety</label>
+                                        <span class="aset-field__value" id="promo-badge-radius-val">100px</span>
+                                    </div>
+                                    <input class="aset-range" type="range" id="promo-badge-radius" min="0" max="100" step="1" value="100">
+                                </div>
+
+                                <div class="aset-field">
+                                    <div class="aset-field__labelrow">
+                                        <label class="aset-field__label" for="promo-button-radius">Zaokrąglenie przycisku</label>
+                                        <span class="aset-field__value" id="promo-button-radius-val">10px</span>
+                                    </div>
+                                    <input class="aset-range" type="range" id="promo-button-radius" min="0" max="40" step="1" value="10">
+                                </div>
+                            </div>
+
+                            <div class="aset-grid aset-grid--2">
+                                <div class="aset-field">
+                                    <label class="aset-field__label" for="promo-text-align">Wyrównanie tekstu</label>
+                                    <select class="aset-input aset-select" id="promo-text-align">
+                                        <option value="center">Do środka</option>
+                                        <option value="left">Do lewej</option>
+                                        <option value="right">Do prawej</option>
+                                    </select>
+                                </div>
+
+                                <div class="aset-field">
+                                    <div class="aset-switchrow">
+                                        <div class="aset-switchrow__text">
+                                            <span class="aset-switchrow__title">Przycisk na pełną szerokość</span>
+                                            <p class="aset-switchrow__hint">Wyłącz, aby dopasować do treści</p>
+                                        </div>
+                                        <label class="toggle-switch">
+                                            <input type="checkbox" id="promo-button-fullwidth" checked>
+                                            <span class="toggle-slider"></span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
+                        <!-- Colours -->
+                        <section class="aset-section">
+                            <h4 class="aset-section__title">Kolory</h4>
+
+                            <div class="aset-grid aset-grid--3">
+                                <div class="aset-field">
+                                    <label class="aset-field__label" for="promo-title-color-text">Nagłówek</label>
+                                    <div class="aset-color">
+                                        <input class="aset-color__swatch" type="color" id="promo-title-color" value="#ffffff" aria-label="Kolor nagłówka">
+                                        <input class="aset-input aset-color__hex" type="text" id="promo-title-color-text" value="#ffffff" spellcheck="false">
+                                    </div>
+                                </div>
+
+                                <div class="aset-field">
+                                    <label class="aset-field__label" for="promo-desc-color-text">Opis</label>
+                                    <div class="aset-color">
+                                        <input class="aset-color__swatch" type="color" id="promo-desc-color" value="#8b8b93" aria-label="Kolor opisu">
+                                        <input class="aset-input aset-color__hex" type="text" id="promo-desc-color-text" value="#8b8b93" spellcheck="false">
+                                    </div>
+                                </div>
+
+                                <div class="aset-field">
+                                    <label class="aset-field__label" for="promo-button-color-text">Przycisk</label>
+                                    <div class="aset-color">
+                                        <input class="aset-color__swatch" type="color" id="promo-button-color" value="#ffffff" aria-label="Kolor przycisku">
+                                        <input class="aset-input aset-color__hex" type="text" id="promo-button-color-text" value="#ffffff" spellcheck="false">
+                                    </div>
+                                </div>
+
+                                <div class="aset-field">
+                                    <label class="aset-field__label" for="promo-badge-bg-text">Tło etykiety</label>
+                                    <div class="aset-color">
+                                        <input class="aset-color__swatch" type="color" id="promo-badge-bg" value="#17171c" aria-label="Tło etykiety">
+                                        <input class="aset-input aset-color__hex" type="text" id="promo-badge-bg-text" value="#17171c" spellcheck="false">
+                                    </div>
+                                </div>
+
+                                <div class="aset-field">
+                                    <label class="aset-field__label" for="promo-badge-text-color-text">Tekst etykiety</label>
+                                    <div class="aset-color">
+                                        <input class="aset-color__swatch" type="color" id="promo-badge-text-color" value="#d4d4d8" aria-label="Kolor tekstu etykiety">
+                                        <input class="aset-input aset-color__hex" type="text" id="promo-badge-text-color-text" value="#d4d4d8" spellcheck="false">
+                                    </div>
+                                </div>
+
+                                <div class="aset-field">
+                                    <label class="aset-field__label" for="promo-badge-border-color-text">Obramowanie etykiety</label>
+                                    <div class="aset-color">
+                                        <input class="aset-color__swatch" type="color" id="promo-badge-border-color" value="#2a2a32" aria-label="Obramowanie etykiety">
+                                        <input class="aset-input aset-color__hex" type="text" id="promo-badge-border-color-text" value="#2a2a32" spellcheck="false">
+                                    </div>
+                                </div>
+
+                                <div class="aset-field">
+                                    <label class="aset-field__label" for="promo-modal-bg-text">Tło okna</label>
+                                    <div class="aset-color">
+                                        <input class="aset-color__swatch" type="color" id="promo-modal-bg" value="#0f0f12" aria-label="Tło okna">
+                                        <input class="aset-input aset-color__hex" type="text" id="promo-modal-bg-text" value="#0f0f12" spellcheck="false">
+                                    </div>
+                                </div>
+
+                                <div class="aset-field">
+                                    <label class="aset-field__label" for="promo-modal-border-color-text">Obramowanie okna</label>
+                                    <div class="aset-color">
+                                        <input class="aset-color__swatch" type="color" id="promo-modal-border-color" value="#1e1e24" aria-label="Obramowanie okna">
+                                        <input class="aset-input aset-color__hex" type="text" id="promo-modal-border-color-text" value="#1e1e24" spellcheck="false">
+                                    </div>
+                                </div>
+
+                                <div class="aset-field">
+                                    <label class="aset-field__label" for="promo-overlay-bg-text">Kolor przyciemnienia</label>
+                                    <div class="aset-color">
+                                        <input class="aset-color__swatch" type="color" id="promo-overlay-bg" value="#000000" aria-label="Kolor przyciemnienia">
+                                        <input class="aset-input aset-color__hex" type="text" id="promo-overlay-bg-text" value="#000000" spellcheck="false">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="aset-grid aset-grid--2">
+                                <div class="aset-field">
+                                    <div class="aset-field__labelrow">
+                                        <label class="aset-field__label" for="promo-overlay-opacity">Krycie przyciemnienia</label>
+                                        <span class="aset-field__value" id="promo-overlay-opacity-val">0.85</span>
+                                    </div>
+                                    <input class="aset-range" type="range" id="promo-overlay-opacity" min="0" max="1" step="0.05" value="0.85">
+                                </div>
+
+                                <div class="aset-field">
+                                    <div class="aset-field__labelrow">
+                                        <label class="aset-field__label" for="promo-overlay-blur">Rozmycie tła</label>
+                                        <span class="aset-field__value" id="promo-overlay-blur-val">12px</span>
+                                    </div>
+                                    <input class="aset-range" type="range" id="promo-overlay-blur" min="0" max="30" step="1" value="12">
+                                </div>
+                            </div>
+                        </section>
+
+                        <!-- Actions -->
+                        <div class="aset-actions">
+                            <button type="button" class="aset-btn aset-btn--ghost" onclick="resetPromoPopupSettings()">Przywróć domyślne</button>
+                            <button type="button" class="aset-btn aset-btn--ghost" onclick="previewPromoPopup()">Pokaż na stronie</button>
+                            <button type="submit" class="aset-btn aset-btn--primary">Zapisz zmiany</button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Live preview: mirrors the popup markup and consumes the
+                     same --promo-* custom properties as the real thing -->
+                <aside class="aset-preview">
+                    <div class="aset-preview__head">
+                        <span class="aset-preview__title">Podgląd na żywo</span>
+                        <span class="aset-preview__state" id="promo-preview-state">Włączony</span>
+                    </div>
+
+                    <div class="aset-preview__stage" id="promo-preview-stage">
+                        <div class="promo-surface aset-preview__surface" id="promo-preview-surface" data-position="center" data-align="center">
+                            <div class="aset-preview__scaler" id="promo-preview-scaler">
+                                <div class="promo-popup-modal">
+                                    <button type="button" class="promo-popup-close" tabindex="-1" aria-hidden="true">
+                                        <i class="fa-solid fa-xmark"></i>
+                                    </button>
+                                    <div class="promo-popup-content">
+                                        <div class="promo-popup-badge" id="promo-preview-badge">
+                                            <span id="promo-preview-badge-text">SPECJALNA OFERTA</span>
+                                        </div>
+                                        <h2 id="promo-preview-title">Obecnie -50% na wysyłkę w OssBuy!</h2>
+                                        <p id="promo-preview-description">Zarejestruj się teraz i skorzystaj z tej wyjątkowej okazji.</p>
+                                        <span class="promo-cta-button" id="promo-preview-button">
+                                            <span id="promo-preview-button-text">Zarejestruj się w OssBuy</span>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <p class="aset-preview__note">Podgląd odwzorowuje wygląd 1:1 i skaluje się do szerokości panelu.</p>
+                </aside>
+                </div>
+                </div><!-- /aset-pane-popup -->
+
+                <!-- Agents -->
+                <div class="aset-pane" id="aset-pane-agents" role="tabpanel">
+                <div class="aset-card">
+                    <div class="aset-card__head">
+                        <div class="aset-card__headtext">
+                            <h3 class="aset-card__title">Agenci</h3>
+                            <p class="aset-card__desc">Lista dostępna w Ustawieniach strony i w konwerterze. Wbudowanych agentów nie można usunąć.</p>
+                        </div>
+                    </div>
+
+                    <div class="aset-body">
+                        <div class="aset-list" id="agents-list"></div>
+
+                        <section class="aset-section aset-section--flush">
+                            <h4 class="aset-section__title">Dodaj agenta</h4>
+                            <div class="aset-grid aset-grid--3">
+                                <div class="aset-field">
+                                    <label class="aset-field__label" for="agent-new-name">Nazwa</label>
+                                    <input class="aset-input" type="text" id="agent-new-name" placeholder="np. SuperBuy" maxlength="30">
+                                </div>
+                                <div class="aset-field">
+                                    <label class="aset-field__label" for="agent-new-abbr">Skrót</label>
+                                    <input class="aset-input" type="text" id="agent-new-abbr" placeholder="SB" maxlength="3">
+                                    <p class="aset-field__hint">2–3 znaki, widoczne w kółku</p>
+                                </div>
+                                <div class="aset-field">
+                                    <label class="aset-field__label" for="agent-new-id">Identyfikator</label>
+                                    <input class="aset-input" type="text" id="agent-new-id" placeholder="superbuy" maxlength="32">
+                                    <p class="aset-field__hint">Pusty = z nazwy</p>
+                                </div>
+                            </div>
+
+                            <div class="aset-field">
+                                <label class="aset-field__label" for="agent-new-template">Szablon linku</label>
+                                <input class="aset-input" type="text" id="agent-new-template" placeholder="https://www.superbuy.com/item/details?url={url}">
+                                <p class="aset-field__hint">
+                                    <code>{url}</code> — link produktu zakodowany, <code>{rawurl}</code> — bez kodowania,
+                                    <code>{id}</code> — ID przedmiotu, jeśli udało się je odczytać.
+                                </p>
+                            </div>
+
+                            <div class="aset-field">
+                                <label class="aset-field__label">Podgląd wyniku</label>
+                                <p class="aset-preview-line" id="agent-new-preview">—</p>
+                            </div>
+
+                            <div class="aset-actions">
+                                <button type="button" class="aset-btn aset-btn--primary" id="agent-add-btn">Dodaj agenta</button>
+                            </div>
+                        </section>
+                    </div>
+                </div>
+
+                </div><!-- /aset-pane-agents -->
+
+                <!-- Social links -->
+                <div class="aset-pane" id="aset-pane-social" role="tabpanel">
+                <div class="aset-card">
+                    <div class="aset-card__head">
+                        <div class="aset-card__headtext">
+                            <h3 class="aset-card__title">Linki społecznościowe</h3>
+                            <p class="aset-card__desc">Pokazywane w pasku przy prawej krawędzi strony. Wyłączone lub bez adresu są pomijane.</p>
+                        </div>
+                    </div>
+
+                    <div class="aset-body">
+                        <div class="aset-list" id="social-list"></div>
+
+                        <section class="aset-section aset-section--flush">
+                            <h4 class="aset-section__title">Dodaj link</h4>
+                            <div class="aset-grid aset-grid--2">
+                                <div class="aset-field">
+                                    <label class="aset-field__label" for="social-new-platform">Serwis</label>
+                                    <select class="aset-input aset-select" id="social-new-platform"></select>
+                                </div>
+                                <div class="aset-field">
+                                    <label class="aset-field__label" for="social-new-url">Adres</label>
+                                    <input class="aset-input" type="url" id="social-new-url" placeholder="https://discord.gg/...">
+                                </div>
+                            </div>
+
+                            <div class="aset-actions">
+                                <button type="button" class="aset-btn aset-btn--primary" id="social-add-btn">Dodaj link</button>
+                            </div>
+                        </section>
+                    </div>
+                </div>
+                </div><!-- /aset-pane-social -->
+            </div>
+            
+            
+        </main>
+    </div>
+
+    <!-- Bulk Scrape Modal -->
+    <div class="modal-overlay hidden" id="bulk-scrape-modal">
+        <div class="modal-content" style="max-width: 700px;">
+            <div class="modal-header">
+                <h2><i class="fa-solid fa-robot"></i> Bulk Scrape - Weidian</h2>
+                <button class="close-btn" id="close-bulk-scrape-modal"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="import-section">
+                    <h3 style="font-size: 1rem; margin-bottom: 0.5rem; color: var(--text-secondary);">Wklej linki Weidian</h3>
+                    <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1rem;">
+                        Wklej jeden lub więcej linków Weidian (jeden na linię lub rozdzielone spacją)
+                    </p>
+                    
+                    <textarea 
+                        id="bulk-scrape-urls" 
+                        placeholder="https://weidian.com/item.html?itemID=123456789&#10;https://weidian.com/item.html?itemID=987654321"
+                        style="width: 100%; min-height: 150px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 1rem; color: var(--text-primary); font-family: monospace; font-size: 0.9rem; resize: vertical; margin-bottom: 1rem;"
+                    ></textarea>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                        <div>
+                            <label style="display: block; color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 0.5rem;">
+                                <i class="fa-solid fa-tag"></i> Batch
+                            </label>
+                            <select id="bulk-scrape-batch" style="width: 100%; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 0.75rem; color: var(--text-primary);">
+                                <option value="best">Best</option>
+                                <option value="budget">Budget</option>
+                                <option value="random">Random</option>
+                                <option value="popular">Popular</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label style="display: block; color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 0.5rem;">
+                                <i class="fa-solid fa-bolt"></i> Concurrency
+                            </label>
+                            <select id="bulk-scrape-concurrency" style="width: 100%; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 0.75rem; color: var(--text-primary);">
+                                <option value="2">2 (slow)</option>
+                                <option value="4" selected>4 (recommended)</option>
+                                <option value="6">6 (fast)</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <label style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1.5rem; cursor: pointer;">
+                        <input type="checkbox" id="bulk-scrape-pin" checked style="width: 18px; height: 18px;">
+                        <span style="color: var(--text-secondary); font-size: 0.9rem;">
+                            <i class="fa-solid fa-thumbtack"></i> Przypnij produkty
+                        </span>
+                    </label>
+                    
+                    <div id="bulk-scrape-progress" class="hidden" style="margin-bottom: 1rem;">
+                        <div style="background: rgba(255,255,255,0.05); border-radius: 8px; height: 8px; overflow: hidden; margin-bottom: 0.5rem;">
+                            <div id="bulk-scrape-progress-bar" style="background: #ffffff; height: 100%; width: 0%; transition: width 0.3s;"></div>
+                        </div>
+                        <div id="bulk-scrape-status" style="color: var(--text-muted); font-size: 0.85rem;"></div>
+                    </div>
+                    
+                    <div id="bulk-scrape-results" class="hidden" style="background: rgba(255,255,255,0.05); padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                            <span style="color: var(--text-secondary);">Sukces:</span>
+                            <span id="bulk-scrape-success-count" style="color: #10b981; font-weight: 600;"></span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between;">
+                            <span style="color: var(--text-secondary);">Błędy:</span>
+                            <span id="bulk-scrape-error-count" style="color: #ef4444; font-weight: 600;"></span>
+                        </div>
+                    </div>
+                    
+                    <button class="btn btn-primary" id="start-bulk-scrape-btn" style="width: 100%; justify-content: center;">
+                        <i class="fa-solid fa-robot"></i> Rozpocznij Scraping
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Import Products Modal -->
+    <div class="modal-overlay hidden" id="import-products-modal">
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+                <h2><i class="fa-solid fa-file-import"></i> Import Produktów</h2>
+                <button class="close-btn" id="close-import-modal"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="import-section">
+                    <h3 style="font-size: 1rem; margin-bottom: 1rem; color: var(--text-secondary);">Wybierz plik</h3>
+                    <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1rem;">
+                        Obsługiwane formaty: CSV, JSON<br>
+                        <a href="#" id="download-template" style="color: #ffffff; text-decoration: underline;">Pobierz szablon CSV</a>
+                    </p>
+                    
+                    <input type="file" id="import-file-input" accept=".csv,.json" style="display: none;">
+                    <button class="btn btn-secondary" id="select-file-btn" style="width: 100%; justify-content: center; margin-bottom: 1.5rem;">
+                        <i class="fa-solid fa-folder-open"></i> Wybierz plik
+                    </button>
+                    
+                    <div id="file-info" class="hidden" style="background: rgba(255, 255, 255,0.1); border: 1px solid rgba(255, 255, 255,0.3); padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <i class="fa-solid fa-file" style="color: #ffffff;"></i>
+                            <span id="file-name" style="color: var(--text-primary);"></span>
+                        </div>
+                        <div style="margin-top: 0.5rem; color: var(--text-muted); font-size: 0.85rem;">
+                            <span id="products-count"></span> produktów do zaimportowania
+                        </div>
+                    </div>
+                    
+                    <div id="import-progress" class="hidden" style="margin-bottom: 1rem;">
+                        <div style="background: rgba(255,255,255,0.05); border-radius: 8px; height: 8px; overflow: hidden;">
+                            <div id="import-progress-bar" style="background: #ffffff; height: 100%; width: 0%; transition: width 0.3s;"></div>
+                        </div>
+                        <div id="import-status" style="margin-top: 0.5rem; color: var(--text-muted); font-size: 0.85rem;"></div>
+                    </div>
+                    
+                    <div id="import-results" class="hidden" style="background: rgba(255,255,255,0.05); padding: 1rem; border-radius: 8px;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                            <span style="color: var(--text-secondary);">Sukces:</span>
+                            <span id="success-count" style="color: #10b981; font-weight: 600;"></span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between;">
+                            <span style="color: var(--text-secondary);">Błędy:</span>
+                            <span id="error-count" style="color: #ef4444; font-weight: 600;"></span>
+                        </div>
+                    </div>
+                    
+                    <button class="btn btn-primary" id="start-import-btn" disabled style="width: 100%; justify-content: center; margin-top: 1rem;">
+                        <i class="fa-solid fa-upload"></i> Rozpocznij Import
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div class="modal-overlay hidden" id="settings-modal">
+        <div class="modal-content pref-modal">
+            <div class="pref-modal__header">
+                <h2>Preferences</h2>
+                <button class="pref-close-btn" id="close-settings"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="pref-modal__body">
+
+                <!-- Currency -->
+                <div class="pref-row" id="pref-currency-row">
+                    <div class="pref-row__left">
+                        <div class="pref-row__icon"><i class="fa-solid fa-dollar-sign"></i></div>
+                        <div class="pref-row__text">
+                            <span class="pref-row__label" data-i18n="pref.currency">Currency</span>
+                            <span class="pref-row__value" id="pref-currency-val">PLN</span>
+                        </div>
+                    </div>
+                    <i class="fa-solid fa-chevron-right pref-row__arrow"></i>
+                </div>
+                <div class="pref-sub hidden" id="pref-currency-sub">
+                    <button class="pref-sub-item active" data-pref="currency" data-val="PLN">PLN <i class="fa-solid fa-check"></i></button>
+                    <button class="pref-sub-item" data-pref="currency" data-val="EUR">EUR <i class="fa-solid fa-check"></i></button>
+                    <button class="pref-sub-item" data-pref="currency" data-val="USD">USD <i class="fa-solid fa-check"></i></button>
+                    <button class="pref-sub-item" data-pref="currency" data-val="GBP">GBP <i class="fa-solid fa-check"></i></button>
+                </div>
+
+                <!-- Language -->
+                <div class="pref-row" id="pref-lang-row">
+                    <div class="pref-row__left">
+                        <div class="pref-row__icon">🌐</div>
+                        <div class="pref-row__text">
+                            <span class="pref-row__label" data-i18n="pref.language">Language</span>
+                            <span class="pref-row__value" id="pref-lang-val">PL</span>
+                        </div>
+                    </div>
+                    <i class="fa-solid fa-chevron-right pref-row__arrow"></i>
+                </div>
+                <div class="pref-sub hidden" id="pref-lang-sub">
+                    <button class="pref-sub-item active lang-option" data-pref="lang" data-val="PL" data-lang="pl">🇵🇱 Polski <i class="fa-solid fa-check"></i></button>
+                    <button class="pref-sub-item lang-option" data-pref="lang" data-val="EN" data-lang="en">🇬🇧 English <i class="fa-solid fa-check"></i></button>
+                </div>
+
+                <!-- Agent -->
+                <div class="pref-row" id="pref-agent-row">
+                    <div class="pref-row__left">
+                        <div class="pref-row__icon pref-agent-avatar" id="pref-agent-avatar">LI</div>
+                        <div class="pref-row__text">
+                            <span class="pref-row__label">Agent</span>
+                            <span class="pref-row__value" id="pref-agent-val">Litbuy</span>
+                        </div>
+                    </div>
+                    <i class="fa-solid fa-chevron-right pref-row__arrow"></i>
+                </div>
+                <div class="pref-sub hidden" id="pref-agent-sub">
+                    <!-- Rendered by renderAgentPreferenceList() from getAllAgents(),
+                         so admin-added agents appear here automatically. -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Login Modal -->
+    <div class="modal-overlay hidden" id="login-modal">
+        <div class="modal-content login-content">
+            <div class="modal-header">
+                <h2><i class="fa-solid fa-lock"></i> Logowanie Administratora</h2>
+                <button class="close-btn" id="close-login"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            
+            <div class="modal-body">
+                <form id="login-form">
+                    <div class="input-group">
+                        <label for="admin-login">Email</label>
+                        <div class="input-wrapper">
+                            <i class="fa-solid fa-envelope"></i>
+                            <input type="email" id="admin-login" placeholder="admin@example.com" required>
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label for="admin-password">Hasło</label>
+                        <div class="input-wrapper">
+                            <i class="fa-solid fa-key"></i>
+                            <input type="password" id="admin-password" placeholder="Wprowadź hasło..." required>
+                        </div>
+                    </div>
+                    <div class="error-msg hidden" id="login-error">Nieprawidłowy email lub hasło.</div>
+                    <button type="submit" class="btn btn-primary login-submit-btn">
+                        Zaloguj się
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Product Detail View -->
+    <div id="product-detail-view" class="main-view hidden">
+        <!-- Back Navigation -->
+        <div class="pdv-back-nav">
+            <button class="pdv-back-btn" id="pdv-back-btn">
+                <i class="fa-solid fa-arrow-left"></i>
+                <span data-i18n="pdv.back">Powrót</span>
+            </button>
+        </div>
+
+        <!-- Product Detail Container -->
+        <div class="pdv-container">
+            <!-- Loading State -->
+            <div class="pdv-loading" id="pdv-loading">
+                <i class="fa-solid fa-spinner fa-spin"></i>
+                <p data-i18n="pdv.loading">Ładowanie produktu...</p>
+            </div>
+
+            <!-- Error State -->
+            <div class="pdv-error hidden" id="pdv-error">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+                <h3 data-i18n="pdv.error.title">Nie znaleziono produktu</h3>
+                <p data-i18n="pdv.error.message">Produkt o podanym ID nie istnieje lub został usunięty.</p>
+                <button class="btn btn-primary" onclick="showView('products-view')">
+                    <i class="fa-solid fa-arrow-left"></i>
+                    <span data-i18n="pdv.error.back">Wróć do produktów</span>
+                </button>
+            </div>
+
+            <!-- Main Content -->
+            <div class="pdv-content hidden" id="pdv-content">
+                <!-- Product Image -->
+                <div class="pdv-image-section">
+                    <div class="pdv-image-wrapper">
+                        <img id="pdv-image" src="" alt="" class="pdv-image">
+                        <button class="pdv-expand-btn" id="pdv-expand-btn" title="Powiększ obraz">
+                            <i class="fa-solid fa-expand"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Product Information -->
+                <div class="pdv-info-section">
+                    <!-- Title -->
+                    <h1 class="pdv-title" id="pdv-title"></h1>
+
+                    <!-- Meta Information -->
+                    <div class="pdv-meta">
+                        <span class="pdv-badge pdv-badge-service">
+                            <i class="fa-solid fa-headset"></i>
+                            <span data-i18n="pdv.customerService">Customer Service</span>
+                        </span>
+                        <span class="pdv-meta-item" id="pdv-product-id">
+                            <i class="fa-solid fa-barcode"></i>
+                            <span data-i18n="pdv.sku">SKU:</span> <span id="pdv-id-value"></span>
+                        </span>
+                        <span class="pdv-meta-item" id="pdv-product-style">
+                            <i class="fa-solid fa-tag"></i>
+                            <span data-i18n="pdv.style">Style:</span> <span id="pdv-style-value"></span>
+                        </span>
+                    </div>
+
+                    <!-- Price -->
+                    <div class="pdv-price-section">
+                        <span class="pdv-price" id="pdv-price"></span>
+                        <span class="pdv-currency" id="pdv-currency"></span>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="pdv-actions">
+                        <a class="pdv-action-btn pdv-action-primary" id="pdv-view-btn" href="#" target="_blank">
+                            <i class="fa-solid fa-external-link-alt"></i>
+                            <span data-i18n="pdv.view">View</span>
+                        </a>
+                        <button class="pdv-action-btn pdv-action-secondary" id="pdv-save-btn">
+                            <i class="fa-regular fa-bookmark"></i>
+                            <span data-i18n="pdv.save">Save</span>
+                        </button>
+                        <button class="pdv-action-btn pdv-action-icon" id="pdv-share-btn" title="Udostępnij">
+                            <i class="fa-solid fa-share-nodes"></i>
+                        </button>
+                        <button class="pdv-action-btn pdv-action-icon" id="pdv-fullscreen-btn" title="Pełny ekran">
+                            <i class="fa-solid fa-up-right-and-down-left-from-center"></i>
+                        </button>
+                    </div>
+
+                    <!-- Report Problem Link -->
+                    <a href="#" class="pdv-report-link" id="pdv-report-link">
+                        <i class="fa-solid fa-flag"></i>
+                        <span data-i18n="pdv.report">Raport problem link</span>
+                    </a>
+
+                    <!-- Description Section (Expandable) -->
+                    <div class="pdv-description-section" id="pdv-description-section">
+                        <button class="pdv-description-header" id="pdv-description-toggle">
+                            <span data-i18n="pdv.description">Opis produktu</span>
+                            <i class="fa-solid fa-chevron-down pdv-description-icon"></i>
+                        </button>
+                        <div class="pdv-description-content hidden" id="pdv-description-content">
+                            <p id="pdv-description-text"></p>
+                        </div>
+                    </div>
+
+                    <!-- Stats -->
+                    <div class="pdv-stats">
+                        <div class="pdv-stat">
+                            <i class="fa-regular fa-eye"></i>
+                            <span id="pdv-views">0</span>
+                            <span data-i18n="pdv.views">wyświetleń</span>
+                        </div>
+                        <div class="pdv-stat">
+                            <i class="fa-regular fa-heart"></i>
+                            <span id="pdv-likes">0</span>
+                            <span data-i18n="pdv.likes">polubień</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Related Products Section -->
+            <div class="pdv-related-section hidden" id="pdv-related-section">
+                <div class="pdv-related-header">
+                    <h2 class="pdv-related-title">
+                        <span id="pdv-related-category-name"></span>
+                    </h2>
+                    <a href="#" class="pdv-related-view-all" id="pdv-related-view-all">
+                        <span data-i18n="pdv.viewAll">View all</span>
+                        <i class="fa-solid fa-arrow-right"></i>
+                    </a>
+                </div>
+                <div class="pdv-related-scroll" id="pdv-related-scroll">
+                    <!-- Related product cards will be inserted here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Image Lightbox Modal -->
+    <div class="pdv-lightbox-overlay hidden" id="pdv-lightbox">
+        <button class="pdv-lightbox-close" id="pdv-lightbox-close">
+            <i class="fa-solid fa-times"></i>
+        </button>
+        <img src="" alt="" class="pdv-lightbox-image" id="pdv-lightbox-image">
+    </div>
+
+    <!-- Tracking View -->
+    <div id="tracking-view" class="main-view hidden tool-view" data-fxtrk-nolocale>
+        <div class="tool-hero">
+            <h1 class="tool-hero__title">Track Your Package</h1>
+            <p class="tool-hero__sub">Enter your tracking number below to verify the exact status of your shipment.</p>
+            <div class="tool-input-row">
+                <div class="tool-input-wrap">
+                    <i class="fa-solid fa-cube tool-input-icon"></i>
+                    <input type="text" id="YQNum" class="tool-input" placeholder="Enter tracking number (e.g. CG123456789DE)" maxlength="60">
+                </div>
+                <button class="tool-btn">
+                    <i class="fa-solid fa-arrow-right"></i> Track
+                </button>
+            </div>
+        </div>
+        <div id="YQContainer" class="tool-results" data-fxtrk-nolocale></div>
+    </div>
+
+    <!-- Link Converter View -->
+    <div id="converter-view" class="main-view hidden tool-view">
+        <div class="tool-hero">
+            <h1 class="tool-hero__title">Link Converter</h1>
+            <p class="tool-hero__sub">Convert any marketplace link instantly</p>
+            <div class="tool-input-row">
+                <div class="tool-input-wrap" style="flex:1">
+                    <i class="fa-solid fa-globe tool-input-icon"></i>
+                    <input type="text" id="converter-input" class="tool-input" placeholder="Paste link here (Taobao, Weidian, 1688, Tmall...)">
+                </div>
+                <!-- Agent selector -->
+                <div class="agent-dropdown" id="agent-dropdown">
+                    <button class="agent-btn" id="agent-btn">
+                        <span class="agent-avatar" id="agent-avatar">LI</span>
+                        <span id="agent-name">Litbuy</span>
+                        <i class="fa-solid fa-chevron-right" style="font-size:0.65rem;opacity:0.5;"></i>
+                    </button>
+                    <div class="agent-menu" id="agent-menu">
+                        <div class="agent-menu__label">SELECT AGENT</div>
+                        <button class="agent-item active" data-agent="litbuy" data-abbr="LI">
+                            <span class="agent-avatar">LI</span> Litbuy
+                            <i class="fa-solid fa-check agent-check"></i>
+                        </button>
+                        <button class="agent-item" data-agent="kakobuy" data-abbr="KA">
+                            <span class="agent-avatar">KA</span> Kakobuy
+                            <i class="fa-solid fa-check agent-check"></i>
+                        </button>
+                        <button class="agent-item" data-agent="usfans" data-abbr="US">
+                            <span class="agent-avatar">US</span> Usfans
+                            <i class="fa-solid fa-check agent-check"></i>
+                        </button>
+                        <button class="agent-item" data-agent="acbuy" data-abbr="AC">
+                            <span class="agent-avatar">AC</span> Acbuy
+                            <i class="fa-solid fa-check agent-check"></i>
+                        </button>
+                        <button class="agent-item" data-agent="wegobuy" data-abbr="WG">
+                            <span class="agent-avatar">WG</span> Wegobuy
+                            <i class="fa-solid fa-check agent-check"></i>
+                        </button>
+                        <button class="agent-item" data-agent="mulebuy" data-abbr="MU">
+                            <span class="agent-avatar">MU</span> MuleBuy
+                            <i class="fa-solid fa-check agent-check"></i>
+                        </button>
+                        <button class="agent-item" data-agent="oopbuy" data-abbr="OP">
+                            <span class="agent-avatar">OP</span> OopBuy
+                            <i class="fa-solid fa-check agent-check"></i>
+                        </button>
+                        <button class="agent-item" data-agent="gtbuy" data-abbr="GT">
+                            <span class="agent-avatar">GT</span> GTBuy
+                            <i class="fa-solid fa-check agent-check"></i>
+                        </button>
+                        <button class="agent-item" data-agent="hipobuy" data-abbr="HI">
+                            <span class="agent-avatar">HI</span> HipoBuy
+                            <i class="fa-solid fa-check agent-check"></i>
+                        </button>
+                        <button class="agent-item" data-agent="allchinabuy" data-abbr="CB">
+                            <span class="agent-avatar">CB</span> AllChinaBuy
+                            <i class="fa-solid fa-check agent-check"></i>
+                        </button>
+                        <button class="agent-item" data-agent="raw" data-abbr="RA">
+                            <span class="agent-avatar">RA</span> Raw Link
+                            <i class="fa-solid fa-check agent-check"></i>
+                        </button>
+                    </div>
+                </div>
+                <button class="tool-btn" id="convert-btn">
+                    Convert <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </div>
+            <p class="tool-hint"><i class="fa-solid fa-circle" style="font-size:0.4rem;opacity:0.4;"></i> Supports Taobao, Weidian, 1688, Tmall and all major agent links</p>
+            <!-- Result -->
+            <div class="converter-result hidden" id="converter-result">
+                <div class="converter-result__inner">
+                    <span id="converter-result-url"></span>
+                    <button class="tool-copy-btn" id="converter-copy-btn">
+                        <i class="fa-solid fa-copy"></i> Copy
+                    </button>
+                    <a class="tool-open-btn" id="converter-open-btn" href="#" target="_blank">
+                        <i class="fa-solid fa-arrow-up-right-from-square"></i> Open
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- How it works -->
+        <div class="how-it-works">
+            <p class="how-label">HOW IT WORKS</p>
+            <h2 class="how-title">Simple 3-Step Process</h2>
+            <div class="how-grid">
+                <div class="how-card">
+                    <div class="how-icon"><i class="fa-solid fa-link"></i></div>
+                    <h3>Paste Link</h3>
+                    <p>Copy any product link from Taobao, Weidian, 1688, or agent sites</p>
+                </div>
+                <div class="how-card">
+                    <div class="how-icon"><i class="fa-solid fa-cart-shopping"></i></div>
+                    <h3>Select Agent</h3>
+                    <p>Choose your preferred shopping agent or get the raw link</p>
+                </div>
+                <div class="how-card">
+                    <div class="how-icon"><i class="fa-solid fa-arrow-right"></i></div>
+                    <h3>Convert</h3>
+                    <p>Get your converted link instantly and start shopping</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- QC Finder View -->
+    <div id="qc-view" class="main-view hidden tool-view">
+        <div class="tool-hero">
+            <h1 class="tool-hero__title">QC Finder</h1>
+            <p class="tool-hero__sub">Find quality control photos for your products from multiple sources</p>
+            <div class="tool-input-row">
+                <div class="tool-input-wrap" style="flex:1">
+                    <i class="fa-solid fa-magnifying-glass tool-input-icon"></i>
+                    <input type="text" id="qc-input" class="tool-input" placeholder="Paste Taobao/Tmall product URL....">
+                </div>
+                <button class="tool-btn" id="qc-btn">
+                    <i class="fa-solid fa-magnifying-glass"></i> Find Photos
+                </button>
+            </div>
+        </div>
+        <div class="qc-placeholder" id="qc-placeholder">
+            <div class="qc-placeholder__icon">
+                <span style="font-size:2rem;line-height:1;">📷</span>
+            </div>
+            <h3>Find QC Photos</h3>
+            <p>Paste a Taobao or Tmall product link above to discover<br>quality control photos from multiple sources</p>
+        </div>
+        <div class="qc-results hidden" id="qc-results"></div>
+    </div>
+
+    
+    <!-- Add Product Modal (Template Import)
+         NOTE: renamed from "add-product-modal" — it collided with the manual
+         add form above, so getElementById always returned the wrong node. -->
+    <div class="modal-overlay hidden" id="template-import-modal">
+        <div class="modal-content" style="max-width: 650px; padding: 0; background: #0f0f13; border: 1px solid rgba(255,255,255,0.05); border-radius: 16px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);">
+            <div class="modal-header" style="padding: 1.5rem 2rem; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between; align-items: center;">
+                <h2 style="font-size: 1.4rem; margin: 0; font-weight: 700; color: #fff;"><i class="fa-solid fa-file-import" style="color: #ffffff; margin-right: 0.5rem;"></i> Template Import</h2>
+                <button class="close-btn" id="close-add-product" style="background: rgba(255,255,255,0.05); border: none; width: 32px; height: 32px; border-radius: 8px; color: rgba(255,255,255,0.6); cursor: pointer; transition: 0.2s;"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            
+            <div class="modal-body" style="padding: 2rem;">
+                <!-- Import Method -->
+                <div class="settings-section" style="margin-bottom: 1.5rem;">
+                    <h3 style="font-size: 0.75rem; font-weight: 700; color: rgba(255,255,255,0.5); text-transform: uppercase; margin-bottom: 0.75rem;">Import Method</h3>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr 1.2fr; gap: 0.5rem;">
+                        <button class="btn import-method-btn" style="padding: 0.8rem; font-size: 0.9rem; border-radius: 8px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); color: #fff; cursor: pointer;"><i class="fa-solid fa-paste"></i> Paste Text</button>
+                        <button class="btn import-method-btn" style="padding: 0.8rem; font-size: 0.9rem; border-radius: 8px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); color: #fff; cursor: pointer;"><i class="fa-solid fa-folder-open" style="color: #f59e0b;"></i> Upload File</button>
+                        <button class="btn import-method-btn active" style="padding: 0.8rem; font-size: 0.9rem; border-radius: 8px; background: rgba(255, 255, 255,0.15); border: 1px solid #ffffff; color: #fff; cursor: pointer;"><i class="fa-solid fa-link"></i> Google Sheets URL</button>
+                    </div>
+                </div>
+
+                <!-- Google Sheets URL -->
+                <div class="settings-section" style="margin-bottom: 1.5rem;">
+                    <h3 style="font-size: 0.75rem; font-weight: 700; color: rgba(255,255,255,0.5); text-transform: uppercase; margin-bottom: 0.5rem;">Google Sheets URL</h3>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <input type="text" id="import-url" placeholder="https://docs.google.com/spreadsheets/d/..." style="flex: 1; padding: 0.8rem 1rem; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: white; outline: none; font-size: 0.9rem;">
+                        <button id="import-refresh-btn" class="btn" style="padding: 0 1.5rem; border-radius: 8px; background: #a3a3a3; border: none; color: #000; cursor: pointer; transition: 0.2s;"><i class="fa-solid fa-arrows-rotate"></i></button>
+                    </div>
+                    <p style="font-size: 0.75rem; color: rgba(255,255,255,0.5); margin-top: 0.75rem; font-style: italic;">Detected 224 products with names and links.<br>Names will be used as-is from your data. Links will be scraped for images and other details.</p>
+                </div>
+
+                <!-- Mode -->
+                <div class="settings-section" style="margin-bottom: 1.5rem;">
+                    <h3 style="font-size: 0.75rem; font-weight: 700; color: rgba(255,255,255,0.5); text-transform: uppercase; margin-bottom: 0.75rem;">Mode</h3>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr 1.2fr; gap: 0.5rem;">
+                        <button id="import-start-btn" class="btn import-mode-btn active" style="padding: 0.8rem; font-size: 0.9rem; border-radius: 8px; background: rgba(255, 255, 255,0.15); border: 1px solid #ffffff; color: #fff; cursor: pointer;">Add / Refresh</button>
+                        <button class="btn import-mode-btn" style="padding: 0.8rem; font-size: 0.9rem; border-radius: 8px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); color: #fff; cursor: pointer;">Replace Pinned</button>
+                        <button class="btn import-mode-btn" style="padding: 0.8rem; font-size: 0.9rem; border-radius: 8px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); color: #fff; cursor: pointer;">Replace All Catalog</button>
+                    </div>
+                </div>
+
+                <!-- Batch & Category -->
+                <div style="display: grid; grid-template-columns: 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
+                    <div class="settings-section">
+                        <h3 style="font-size: 0.75rem; font-weight: 700; color: rgba(255,255,255,0.5); text-transform: uppercase; margin-bottom: 0.5rem;">Batch</h3>
+                        <div class="custom-select" style="width: 100%; position: relative;">
+                            <select style="width: 100%; padding: 0.8rem 1rem; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: white; appearance: none; outline: none; font-size: 0.9rem; cursor: pointer;">
+                                <option style="background: #1a1a24; color: #fff;">Best</option>
+                                <option style="background: #1a1a24; color: #fff;">Budget</option>
+                            </select>
+                            <i class="fa-solid fa-chevron-down" style="position: absolute; right: 1rem; top: 50%; transform: translateY(-50%); color: rgba(255,255,255,0.5); pointer-events: none;"></i>
+                        </div>
+                    </div>
+
+                    <div class="settings-section">
+                        <h3 style="font-size: 0.75rem; font-weight: 700; color: rgba(255,255,255,0.5); text-transform: uppercase; margin-bottom: 0.5rem;">Category <span style="text-transform: none; font-weight: 400;">(for all products)</span></h3>
+                        <div class="custom-select" style="width: 100%; position: relative;">
+                            <select style="width: 100%; padding: 0.8rem 1rem; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: white; appearance: none; outline: none; font-size: 0.9rem; cursor: pointer;">
+                                <option style="background: #1a1a24; color: #fff;">Accessories</option>
+                                <option style="background: #1a1a24; color: #fff;">Shoes</option>
+                                <option style="background: #1a1a24; color: #fff;">Clothing</option>
+                                <option style="background: #1a1a24; color: #fff;">Electronics</option>
+                                <option style="background: #1a1a24; color: #fff;">Jewelry</option>
+                                <option style="background: #1a1a24; color: #fff;">Watches</option>
+                                <option style="background: #1a1a24; color: #fff;">Bags</option>
+                            </select>
+                            <i class="fa-solid fa-chevron-down" style="position: absolute; right: 1rem; top: 50%; transform: translateY(-50%); color: rgba(255,255,255,0.5); pointer-events: none;"></i>
+                        </div>
+                        <p style="font-size: 0.75rem; color: #3b82f6; margin-top: 0.5rem; font-style: italic;">All imported products will be categorized as <strong style="font-weight: 700;">accessories</strong></p>
+                    </div>
+                </div>
+
+                <!-- Processing Tracker -->
+                <div id="processing-tracker" class="hidden" style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 1.5rem;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 1rem; align-items: center;">
+                        <h4 style="margin: 0; font-size: 0.95rem; font-weight: 600; display: flex; align-items: center; gap: 0.5rem; color: #fff;"><i class="fa-solid fa-box-open" style="color: #d97706;"></i> Processing: 85 / 224</h4>
+                        <div style="font-size: 0.9rem; font-weight: 600;">
+                            <span style="color: #22c55e; margin-right: 1rem;"><i class="fa-solid fa-check"></i> 0</span>
+                            <span style="color: #ef4444;"><i class="fa-solid fa-xmark"></i> 0</span>
+                        </div>
+                    </div>
+                    <!-- Progress Bar -->
+                    <div style="width: 100%; height: 6px; background: rgba(255,255,255,0.05); border-radius: 4px; overflow: hidden; margin-bottom: 1.5rem;">
+                        <div id="processing-bar" style="width: 0%; height: 100%; background: #ffffff; border-radius: 4px; transition: width 0.3s;"></div>
+                    </div>
+                    
+                    <!-- Items -->
+                    <div style="display: flex; flex-direction: column; gap: 0.8rem;">
+                        <div style="display: flex; align-items: center; gap: 1rem; font-size: 0.85rem; color: rgba(255,255,255,0.7);">
+                            <i class="fa-solid fa-hourglass-half" style="color: #f59e0b;"></i> Stone Island hat
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 1rem; font-size: 0.85rem; color: rgba(255,255,255,0.7);">
+                            <i class="fa-solid fa-hourglass-half" style="color: #f59e0b;"></i> Stone Island hat
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 1rem; font-size: 0.85rem; color: rgba(255,255,255,0.7);">
+                            <i class="fa-solid fa-hourglass-half" style="color: #f59e0b;"></i> MLB Hat
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 1rem; font-size: 0.85rem; color: rgba(255,255,255,0.7);">
+                            <i class="fa-solid fa-hourglass-half" style="color: #f59e0b;"></i> MLB Hat
+                        </div>
+                    </div>
+                    <p style="font-size: 0.8rem; color: rgba(255,255,255,0.4); margin-top: 1rem; margin-bottom: 0;">+77 more results</p>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script src="supabase-client-fixed.js?v=7027"></script>
+    <script src="categoryHelper.js?v=7027"></script>
+    <script src="bulk-import.js?v=7027"></script>
+    <script src="main2.js?v=7027"></script>
+<div class="social-sidebar"><a href="#" class="social-bubble"><i class="fa-brands fa-discord"></i></a><a href="#" class="social-bubble"><i class="fa-brands fa-tiktok"></i></a></div>
+
+<!-- Footer -->
+<footer class="site-footer" id="site-footer">
+    <div class="site-footer__inner container">
+        <div class="site-footer__brand">
+            <div class="site-footer__logo">ITEMFINDER</div>
+            <p class="site-footer__tagline">Najlepszy spreadsheet replikacji w Polsce.</p>
+            <div class="site-footer__socials">
+                <a href="#" class="site-footer__social"><i class="fa-brands fa-discord"></i></a>
+                <a href="#" class="site-footer__social"><i class="fa-brands fa-tiktok"></i></a>
+            </div>
+        </div>
+        <div class="site-footer__col">
+            <h4 data-i18n="footer.navigation">Nawigacja</h4>
+            <a href="#" id="footer-home-btn" data-i18n="footer.home">Strona główna</a>
+            <a href="#" id="footer-products-btn" data-i18n="footer.products">Produkty</a>
+            <a href="#" id="footer-sellers-btn" data-i18n="footer.sellers">Sprzedawcy</a>
+        </div>
+        <div class="site-footer__col">
+            <h4 data-i18n="footer.tools">Narzędzia</h4>
+            <a href="#" data-view="tracking-view" data-i18n="nav.tracking">Tracking</a>
+            <a href="#" data-view="converter-view" data-i18n="nav.converter">Link Converter</a>
+            <a href="#" data-view="qc-view" data-i18n="nav.qc">QC Finder</a>
+        </div>
+        <div class="site-footer__col">
+            <h4 data-i18n="footer.info">Info</h4>
+            <a href="#" data-i18n="footer.guide">Poradnik</a>
+            <a href="#" data-i18n="footer.discord">Discord</a>
+            <a href="#" data-i18n="footer.contact">Kontakt</a>
+        </div>
+    </div>
+    <div class="site-footer__bottom container">
+        <span data-i18n="footer.rights">© 2026 ITEMFINDER. All rights reserved.</span>
+        <a href="#" class="footer-frosty-badge" data-i18n="footer.designed">Designed &amp; built by frostyyreps</a>
+    </div>
+</footer>
+
+</body>
+</html>

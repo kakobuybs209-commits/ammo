@@ -1,0 +1,235 @@
+/* ===================================================
+   ITEMFINDER — Scroll Animations
+   Using IntersectionObserver — no library needed
+   =================================================== */
+
+/* ── Initial hidden states ── */
+.reveal-up,
+.reveal-card,
+.reveal-row {
+    opacity: 0;
+    transform: translateY(32px);
+    transition: opacity 0.65s cubic-bezier(0.16, 1, 0.3, 1),
+                transform 0.65s cubic-bezier(0.16, 1, 0.3, 1);
+    will-change: opacity, transform;
+}
+
+/* Cards come from slightly below with a tiny scale */
+.reveal-card {
+    transform: translateY(40px) scale(0.97);
+    transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1),
+                transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Rows slide from left */
+.reveal-row {
+    transform: translateX(-20px) translateY(16px);
+    transition: opacity 0.55s cubic-bezier(0.16, 1, 0.3, 1),
+                transform 0.55s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ── Visible (triggered) state ── */
+.reveal-up.is-visible,
+.reveal-card.is-visible,
+.reveal-row.is-visible {
+    opacity: 1;
+    transform: none;
+}
+
+/* Hero elements animate in on load (not scroll) */
+.hero-left {
+    animation: heroSlideIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.hero-promo, .hero-stats {
+    animation: heroSlideIn 0.9s 0.15s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.hero-badge {
+    animation: heroBadgeIn 0.6s 0.05s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes heroSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(24px);
+    }
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+@keyframes heroBadgeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+/* Header fade in */
+.header {
+    animation: headerIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes headerIn {
+    from { opacity: 0; transform: translateY(-12px); }
+    to   { opacity: 1; transform: none; }
+}
+
+/* ── Products View Animations ── */
+#products-view.active .pv-header {
+    animation: pvHeaderIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+#products-view.active .pv-search-wrap {
+    animation: pvSearchIn 0.55s 0.08s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+#products-view.active .pv-toolbar {
+    animation: pvToolbarIn 0.6s 0.14s cubic-bezier(0.16, 1, 0.3, 1) both;
+    position: relative;
+    z-index: 100;
+}
+
+@keyframes pvHeaderIn {
+    from {
+        opacity: 0;
+        transform: translateY(-16px);
+    }
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+@keyframes pvSearchIn {
+    from {
+        opacity: 0;
+        transform: translateY(18px);
+    }
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+@keyframes pvToolbarIn {
+    from {
+        opacity: 0;
+        transform: translateY(14px);
+    }
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+/* Product cards staggered entry animation */
+.product-card {
+    opacity: 0;
+    transform: translateY(22px) scale(0.97);
+    transition: opacity 0.45s cubic-bezier(0.16, 1, 0.3, 1),
+                transform 0.45s cubic-bezier(0.16, 1, 0.3, 1),
+                background 0.2s ease;
+    will-change: opacity, transform;
+}
+
+.product-card.card-visible {
+    opacity: 1;
+    transform: none;
+    transition-delay: calc(var(--card-i, 0) * 45ms);
+}
+
+
+/* ===================================================
+   TOOL VIEW ENTER ANIMATIONS
+   Tracking / Converter / QC Finder
+   =================================================== */
+
+/* Base: elementy są niewidoczne dopóki view nie jest active */
+.tool-view .cv-page__header .cv-tag,
+.tool-view .cv-page__header .cv-page__title,
+.tool-view .cv-page__header .cv-page__sub,
+.tool-view .cv-input-block,
+.tool-view .cv-results,
+.tool-view .tool-results,
+.tool-view .qc-grid,
+.tool-view .qc-sources,
+.tool-view .converter-results,
+.tool-view .agent-buttons-row,
+.tool-view .cv-page > *:not(.cv-page__header):not(.cv-input-block) {
+    opacity: 0;
+    transform: translateY(16px);
+}
+
+/* Gdy view staje się active — uruchamiamy animacje */
+.tool-view.active .cv-page__header .cv-tag {
+    animation: toolFadeUp 0.45s cubic-bezier(0.16, 1, 0.3, 1) 0.04s both;
+}
+.tool-view.active .cv-page__header .cv-page__title {
+    animation: toolFadeUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.1s both;
+}
+.tool-view.active .cv-page__header .cv-page__sub {
+    animation: toolFadeUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.18s both;
+}
+.tool-view.active .cv-input-block {
+    animation: toolFadeUp 0.55s cubic-bezier(0.16, 1, 0.3, 1) 0.26s both;
+}
+.tool-view.active .cv-results,
+.tool-view.active .tool-results,
+.tool-view.active .qc-grid,
+.tool-view.active .qc-sources,
+.tool-view.active .converter-results,
+.tool-view.active .agent-buttons-row {
+    animation: toolFadeUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.32s both;
+}
+/* Pozostałe dzieci cv-page które nie pasują do powyższych */
+.tool-view.active .cv-page > *:not(.cv-page__header):not(.cv-input-block) {
+    animation: toolFadeUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.32s both;
+}
+
+@keyframes toolFadeUp {
+    from {
+        opacity: 0;
+        transform: translateY(16px);
+    }
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+/* Respect reduced motion */
+@media (prefers-reduced-motion: reduce) {
+    .tool-view .cv-page__header .cv-tag,
+    .tool-view .cv-page__header .cv-page__title,
+    .tool-view .cv-page__header .cv-page__sub,
+    .tool-view .cv-input-block,
+    .tool-view .cv-results,
+    .tool-view .tool-results,
+    .tool-view .qc-grid,
+    .tool-view .qc-sources,
+    .tool-view .converter-results,
+    .tool-view .agent-buttons-row,
+    .tool-view .cv-page > *:not(.cv-page__header):not(.cv-input-block) {
+        animation: none !important;
+        opacity: 1 !important;
+        transform: none !important;
+    }
+    .reveal-up,
+    .reveal-card,
+    .reveal-row,
+    .hero-left,
+    .hero-promo,
+    .hero-stats,
+    .hero-badge,
+    .header {
+        animation: none !important;
+        opacity: 1 !important;
+        transform: none !important;
+        transition: none !important;
+    }
+}
