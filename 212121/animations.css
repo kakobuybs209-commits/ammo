@@ -134,7 +134,6 @@
     transition: opacity 0.45s cubic-bezier(0.16, 1, 0.3, 1),
                 transform 0.45s cubic-bezier(0.16, 1, 0.3, 1),
                 background 0.2s ease;
-    will-change: opacity, transform;
 }
 
 .product-card.card-visible {
