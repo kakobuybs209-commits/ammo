@@ -205,9 +205,17 @@ document.addEventListener('DOMContentLoaded', () => {
         const target = document.getElementById(viewId);
         if (target) {
             target.classList.remove('hidden');
+            // Reset CSS entry animations for tool views on every entry
+            if (target.classList.contains('tool-view')) {
+                target.classList.remove('active');
+                void target.offsetWidth;
+            }
             target.classList.add('active');
         }
         window.scrollTo(0, 0);
+        // Odblokuj scrollowanie przy zmianie widoku
+        document.body.classList.remove('modal-open');
+        document.body.style.overflow = '';
         // footer visibility
         const footer = document.getElementById('site-footer');
         if (footer) footer.style.display = viewId === 'home-view' ? 'block' : 'none';
