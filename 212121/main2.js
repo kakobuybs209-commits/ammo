@@ -1207,13 +1207,6 @@ document.addEventListener('DOMContentLoaded', () => {
     } else {
         console.error('Start import button (#start-import-btn) not found in DOM');
     }
-            }
-            
-            if (results.failed > 0) {
-                console.error('Import errors:', results.errors);
-            }
-        });
-    }
     
     // Download template
     if (downloadTemplateBtn) {

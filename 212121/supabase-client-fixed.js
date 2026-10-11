@@ -2,15 +2,25 @@
 const SUPABASE_URL = 'https://qgzmpjbdwwlmhtsrnbaj.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFnem1wamJkd3dsbWh0c3JuYmFqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA0MDA1NjMsImV4cCI6MjEwNTk3NjU2M30.v87uKHb7zYlTyPfw7jBpgwiF4vUgRiwSxpgkI7f4uGU';
 
-// Initialize Supabase client
+// Initialize Supabase client (reuse if already exists)
 const { createClient } = window.supabase || {};
-const supabase = createClient ? createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+let supabaseClient;
 
-if (supabase) {
+if (window.supabaseClient) {
+    // Reuse existing client
+    supabaseClient = window.supabaseClient;
+    console.log('Supabase client reused from window');
+} else if (createClient) {
+    // Create new client
+    supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    window.supabaseClient = supabaseClient;
     console.log('Supabase client initialized successfully');
 } else {
     console.error('Supabase library not loaded. Make sure the CDN script is included.');
 }
+
+// Alias for compatibility
+const supabase = supabaseClient;
 
 // =========================================
 // PRODUCTS DATABASE FUNCTIONS
