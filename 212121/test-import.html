@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Import - ITEMFINDER</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: #000;
+            color: #fff;
+            padding: 40px;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        h1 {
+            margin-bottom: 30px;
+            font-size: 2rem;
+        }
+        .section {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+        .section h2 {
+            font-size: 1.25rem;
+            margin-bottom: 16px;
+            color: rgba(255,255,255,0.9);
+        }
+        button {
+            background: #fff;
+            color: #000;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-right: 12px;
+            margin-bottom: 12px;
+        }
+        button:hover {
+            background: #e5e5e5;
+        }
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        input[type="file"] {
+            margin: 12px 0;
+        }
+        .status {
+            margin-top: 12px;
+            padding: 12px;
+            border-radius: 8px;
+            display: none;
+        }
+        .status.success {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            color: #10b981;
+            display: block;
+        }
+        .status.error {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #ef4444;
+            display: block;
+        }
+        .status.info {
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            color: #3b82f6;
+            display: block;
+        }
+        pre {
+            background: rgba(0,0,0,0.5);
+            padding: 12px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 0.875rem;
+            margin-top: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Test Import Funkcji</h1>
+        
+        <div class="section">
+            <h2>1. Sprawdzanie dostępności funkcji</h2>
+            <button onclick="checkFunctions()">Sprawdź Funkcje</button>
+            <div id="functions-status" class="status"></div>
+        </div>
+        
+        <div class="section">
+            <h2>2. Test generowania szablonu CSV</h2>
+            <button onclick="testGenerateTemplate()">Generuj Szablon</button>
+            <button onclick="downloadTestTemplate()">Pobierz Szablon</button>
+            <div id="template-status" class="status"></div>
+            <pre id="template-preview"></pre>
+        </div>
+        
+        <div class="section">
+            <h2>3. Test parsowania CSV</h2>
+            <input type="file" id="csv-file" accept=".csv">
+            <button onclick="testParseCSV()">Parsuj CSV</button>
+            <div id="csv-status" class="status"></div>
+            <pre id="csv-preview"></pre>
+        </div>
+        
+        <div class="section">
+            <h2>4. Test parsowania JSON</h2>
+            <input type="file" id="json-file" accept=".json">
+            <button onclick="testParseJSON()">Parsuj JSON</button>
+            <div id="json-status" class="status"></div>
+            <pre id="json-preview"></pre>
+        </div>
+        
+        <div class="section">
+            <h2>5. Test importu do bazy</h2>
+            <p style="color: rgba(255,255,255,0.6); font-size: 0.9rem; margin-bottom: 12px;">
+                Najpierw załaduj plik CSV lub JSON w sekcji powyżej
+            </p>
+            <button onclick="testImportToDB()" id="import-btn" disabled>Importuj do Bazy</button>
+            <div id="import-status" class="status"></div>
+            <pre id="import-results"></pre>
+        </div>
+    </div>
+
+    <!-- Load all dependencies -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+    <script src="supabase-client-fixed.js"></script>
+    <script src="bulk-import.js"></script>
+    
+    <script>
+        let parsedProducts = [];
+        
+        function showStatus(elementId, message, type) {
+            const el = document.getElementById(elementId);
+            el.textContent = message;
+            el.className = 'status ' + type;
+        }
+        
+        function checkFunctions() {
+            const functions = [
+                'generateCSVTemplate',
+                'exportProductsToCSV',
+                'downloadCSV',
+                'parseCSV',
+                'parseJSON',
+                'importProductsFromFile',
+                'bulkImportProducts',
+                'saveProductToDB'
+            ];
+            
+            const results = functions.map(fn => {
+                const exists = typeof window[fn] === 'function';
+                return `${exists ? '✓' : '✗'} ${fn}: ${exists ? 'DOSTĘPNA' : 'BRAK'}`;
+            });
+            
+            const allAvailable = functions.every(fn => typeof window[fn] === 'function');
+            
+            showStatus('functions-status', results.join('\n'), allAvailable ? 'success' : 'error');
+        }
+        
+        function testGenerateTemplate() {
+            try {
+                if (typeof generateCSVTemplate !== 'function') {
+                    showStatus('template-status', 'Błąd: Funkcja generateCSVTemplate nie istnieje', 'error');
+                    return;
+                }
+                
+                const template = generateCSVTemplate();
+                document.getElementById('template-preview').textContent = template;
+                showStatus('template-status', 'Szablon wygenerowany pomyślnie! (' + template.length + ' znaków)', 'success');
+            } catch (error) {
+                showStatus('template-status', 'Błąd: ' + error.message, 'error');
+                console.error(error);
+            }
+        }
+        
+        function downloadTestTemplate() {
+            try {
+                if (typeof generateCSVTemplate !== 'function') {
+                    alert('Funkcja generateCSVTemplate nie istnieje!');
+                    return;
+                }
+                if (typeof downloadCSV !== 'function') {
+                    alert('Funkcja downloadCSV nie istnieje!');
+                    return;
+                }
+                
+                const template = generateCSVTemplate();
+                downloadCSV(template, 'products-template.csv');
+                showStatus('template-status', 'Szablon pobrany!', 'success');
+            } catch (error) {
+                showStatus('template-status', 'Błąd: ' + error.message, 'error');
+                console.error(error);
+            }
+        }
+        
+        async function testParseCSV() {
+            const fileInput = document.getElementById('csv-file');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                showStatus('csv-status', 'Wybierz plik CSV', 'error');
+                return;
+            }
+            
+            try {
+                if (typeof importProductsFromFile !== 'function') {
+                    showStatus('csv-status', 'Błąd: Funkcja importProductsFromFile nie istnieje', 'error');
+                    return;
+                }
+                
+                parsedProducts = await importProductsFromFile(file);
+                document.getElementById('csv-preview').textContent = JSON.stringify(parsedProducts, null, 2);
+                showStatus('csv-status', `Sparsowano ${parsedProducts.length} produktów!`, 'success');
+                document.getElementById('import-btn').disabled = false;
+            } catch (error) {
+                showStatus('csv-status', 'Błąd: ' + error.message, 'error');
+                console.error(error);
+            }
+        }
+        
+        async function testParseJSON() {
+            const fileInput = document.getElementById('json-file');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                showStatus('json-status', 'Wybierz plik JSON', 'error');
+                return;
+            }
+            
+            try {
+                if (typeof importProductsFromFile !== 'function') {
+                    showStatus('json-status', 'Błąd: Funkcja importProductsFromFile nie istnieje', 'error');
+                    return;
+                }
+                
+                parsedProducts = await importProductsFromFile(file);
+                document.getElementById('json-preview').textContent = JSON.stringify(parsedProducts, null, 2);
+                showStatus('json-status', `Sparsowano ${parsedProducts.length} produktów!`, 'success');
+                document.getElementById('import-btn').disabled = false;
+            } catch (error) {
+                showStatus('json-status', 'Błąd: ' + error.message, 'error');
+                console.error(error);
+            }
+        }
+        
+        async function testImportToDB() {
+            if (!parsedProducts || parsedProducts.length === 0) {
+                showStatus('import-status', 'Najpierw załaduj i sparsuj plik!', 'error');
+                return;
+            }
+            
+            try {
+                if (typeof bulkImportProducts !== 'function') {
+                    showStatus('import-status', 'Błąd: Funkcja bulkImportProducts nie istnieje', 'error');
+                    return;
+                }
+                
+                showStatus('import-status', 'Importowanie...', 'info');
+                document.getElementById('import-btn').disabled = true;
+                
+                const results = await bulkImportProducts(parsedProducts, (progress) => {
+                    showStatus('import-status', 
+                        `Importowanie ${progress.current}/${progress.total}: ${progress.product}`, 
+                        'info');
+                });
+                
+                const resultsText = `
+Sukces: ${results.success}
+Błędy: ${results.failed}
+
+${results.errors.length > 0 ? 'Błędy:\n' + results.errors.map(e => `- ${e.product}: ${e.error}`).join('\n') : ''}
+                `.trim();
+                
+                document.getElementById('import-results').textContent = resultsText;
+                showStatus('import-status', 
+                    `Import zakończony! Sukces: ${results.success}, Błędy: ${results.failed}`, 
+                    results.failed > 0 ? 'error' : 'success');
+                
+                document.getElementById('import-btn').disabled = false;
+            } catch (error) {
+                showStatus('import-status', 'Błąd: ' + error.message, 'error');
+                console.error(error);
+                document.getElementById('import-btn').disabled = false;
+            }
+        }
+        
+        // Auto-check functions on load
+        window.addEventListener('load', () => {
+            setTimeout(checkFunctions, 500);
+        });
+    </script>
+</body>
+</html>

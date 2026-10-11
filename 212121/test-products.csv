@@ -1,0 +1,4 @@
+﻿id,name,price,currency,image,category,link,status,clicks,popular
+1,Nike Air Jordan 1 High OG,299.99,PLN,https://example.com/jordan1.jpg,Buty,https://weidian.com/item.html?itemID=123456,active,0,false
+2,Dunk Low Panda,249.99,PLN,https://example.com/dunk.jpg,Buty,https://weidian.com/item.html?itemID=234567,active,0,true
+3,Yeezy 350 V2,349.99,PLN,https://example.com/yeezy.jpg,Buty,https://weidian.com/item.html?itemID=345678,active,0,false

@@ -1073,8 +1073,22 @@ document.addEventListener('DOMContentLoaded', () => {
             const file = e.target.files[0];
             if (!file) return;
             
+            console.log('File selected:', file.name, 'size:', file.size, 'type:', file.type);
+            
+            // Check if function exists
+            if (typeof importProductsFromFile !== 'function') {
+                console.error('importProductsFromFile is not defined');
+                if (typeof showToast === 'function') {
+                    showToast('Błąd: Funkcja importu nie jest dostępna. Sprawdź czy bulk-import.js został załadowany.', 'error');
+                } else {
+                    alert('Błąd: Funkcja importu nie jest dostępna. Sprawdź czy bulk-import.js został załadowany.');
+                }
+                return;
+            }
+            
             try {
                 selectedProducts = await importProductsFromFile(file);
+                console.log('Successfully parsed products:', selectedProducts.length);
                 
                 // Show file info
                 document.getElementById('file-name').textContent = file.name;
@@ -1086,43 +1100,89 @@ document.addEventListener('DOMContentLoaded', () => {
                 document.getElementById('import-results').classList.add('hidden');
                 
             } catch (error) {
-                showToast('Błąd podczas wczytywania pliku: ' + error.message, 'error');
+                console.error('Error importing file:', error);
+                if (typeof showToast === 'function') {
+                    showToast('Błąd podczas wczytywania pliku: ' + error.message, 'error');
+                } else {
+                    alert('Błąd podczas wczytywania pliku: ' + error.message);
+                }
             }
         });
+    } else {
+        console.error('File input (#import-file-input) not found in DOM');
     }
     
     // Start import
     if (startImportBtn) {
         startImportBtn.addEventListener('click', async () => {
+            console.log('Start import clicked, products count:', selectedProducts.length);
+            
+            // Check if function exists
+            if (typeof bulkImportProducts !== 'function') {
+                console.error('bulkImportProducts is not defined');
+                if (typeof showToast === 'function') {
+                    showToast('Błąd: Funkcja importu nie jest dostępna. Sprawdź czy bulk-import.js został załadowany.', 'error');
+                } else {
+                    alert('Błąd: Funkcja importu nie jest dostępna. Sprawdź czy bulk-import.js został załadowany.');
+                }
+                return;
+            }
+            
             startImportBtn.disabled = true;
             selectFileBtn.disabled = true;
             
             // Show progress
             document.getElementById('import-progress').classList.remove('hidden');
             
-            const results = await bulkImportProducts(selectedProducts, (progress) => {
-                // Update progress bar
-                const percent = (progress.current / progress.total) * 100;
-                document.getElementById('import-progress-bar').style.width = percent + '%';
-                document.getElementById('import-status').textContent = 
-                    `Importowanie ${progress.current}/${progress.total}: ${progress.product}`;
-            });
-            
-            // Show results
-            document.getElementById('success-count').textContent = results.success;
-            document.getElementById('error-count').textContent = results.failed;
-            document.getElementById('import-results').classList.remove('hidden');
-            
-            // Hide progress
-            document.getElementById('import-progress').classList.add('hidden');
-            
-            // Re-enable buttons
-            selectFileBtn.disabled = false;
-            
-            // Reload products table
-            if (results.success > 0) {
-                await loadAdminProducts();
-                showToast(`Zaimportowano ${results.success} produktów!`, 'success');
+            try {
+                const results = await bulkImportProducts(selectedProducts, (progress) => {
+                    // Update progress bar
+                    const percent = (progress.current / progress.total) * 100;
+                    document.getElementById('import-progress-bar').style.width = percent + '%';
+                    document.getElementById('import-status').textContent = 
+                        `Importowanie ${progress.current}/${progress.total}: ${progress.product}`;
+                });
+                
+                // Show results
+                document.getElementById('success-count').textContent = results.success;
+                document.getElementById('error-count').textContent = results.failed;
+                document.getElementById('import-results').classList.remove('hidden');
+                
+                // Hide progress
+                document.getElementById('import-progress').classList.add('hidden');
+                
+                // Re-enable buttons
+                selectFileBtn.disabled = false;
+                
+                // Reload products table
+                if (results.success > 0) {
+                    if (typeof loadAdminProducts === 'function') {
+                        await loadAdminProducts();
+                    }
+                    if (typeof showToast === 'function') {
+                        showToast(`Zaimportowano ${results.success} produktów!`, 'success');
+                    } else {
+                        alert(`Zaimportowano ${results.success} produktów!`);
+                    }
+                }
+                
+                if (results.failed > 0) {
+                    console.error('Import errors:', results.errors);
+                }
+            } catch (error) {
+                console.error('Import failed:', error);
+                document.getElementById('import-progress').classList.add('hidden');
+                selectFileBtn.disabled = false;
+                if (typeof showToast === 'function') {
+                    showToast('Błąd podczas importu: ' + error.message, 'error');
+                } else {
+                    alert('Błąd podczas importu: ' + error.message);
+                }
+            }
+        });
+    } else {
+        console.error('Start import button (#start-import-btn) not found in DOM');
+    }
             }
             
             if (results.failed > 0) {
@@ -1135,10 +1195,48 @@ document.addEventListener('DOMContentLoaded', () => {
     if (downloadTemplateBtn) {
         downloadTemplateBtn.addEventListener('click', (e) => {
             e.preventDefault();
-            const template = generateCSVTemplate();
-            downloadCSV(template, 'products-template.csv');
-            showToast('Szablon pobrany!', 'success');
+            console.log('Download template clicked');
+            
+            // Check if functions are loaded
+            if (typeof generateCSVTemplate !== 'function') {
+                console.error('generateCSVTemplate is not defined');
+                if (typeof showToast === 'function') {
+                    showToast('Błąd: Funkcja generowania szablonu nie jest dostępna', 'error');
+                } else {
+                    alert('Błąd: Funkcja generowania szablonu nie jest dostępna. Sprawdź czy bulk-import.js został załadowany.');
+                }
+                return;
+            }
+            
+            if (typeof downloadCSV !== 'function') {
+                console.error('downloadCSV is not defined');
+                if (typeof showToast === 'function') {
+                    showToast('Błąd: Funkcja pobierania nie jest dostępna', 'error');
+                } else {
+                    alert('Błąd: Funkcja pobierania nie jest dostępna. Sprawdź czy bulk-import.js został załadowany.');
+                }
+                return;
+            }
+            
+            try {
+                const template = generateCSVTemplate();
+                downloadCSV(template, 'products-template.csv');
+                if (typeof showToast === 'function') {
+                    showToast('Szablon pobrany!', 'success');
+                } else {
+                    alert('Szablon CSV został pobrany!');
+                }
+            } catch (error) {
+                console.error('Error generating template:', error);
+                if (typeof showToast === 'function') {
+                    showToast('Błąd: ' + error.message, 'error');
+                } else {
+                    alert('Błąd podczas generowania szablonu: ' + error.message);
+                }
+            }
         });
+    } else {
+        console.error('Download template button (#download-template) not found in DOM');
     }
     
     // Export products
