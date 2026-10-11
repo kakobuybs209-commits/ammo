@@ -1497,10 +1497,17 @@
                             <span style="color: var(--text-secondary);">Zaimportowano:</span>
                             <span id="template-success-count" style="color: #10b981; font-weight: 600;"></span>
                         </div>
-                        <div style="display: flex; justify-content: space-between;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
                             <span style="color: var(--text-secondary);">Błędy:</span>
                             <span id="template-error-count" style="color: #ef4444; font-weight: 600;"></span>
                         </div>
+                        <div id="template-error-details" class="hidden" style="margin-top: 1rem; padding: 0.75rem; background: rgba(239, 68, 68, 0.1); border-radius: 6px; font-size: 0.8rem; color: #ef4444; max-height: 200px; overflow-y: auto;">
+                            <div style="font-weight: 600; margin-bottom: 0.5rem;">Pierwsze błędy:</div>
+                            <div id="template-error-list" style="font-family: monospace;"></div>
+                        </div>
+                        <button id="show-errors-btn" class="hidden" style="margin-top: 0.5rem; padding: 0.5rem; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); border-radius: 6px; color: #ef4444; cursor: pointer; font-size: 0.85rem; width: 100%;">
+                            Pokaż szczegóły błędów
+                        </button>
                     </div>
                     
                     <!-- Start Import Button -->

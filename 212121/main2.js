@@ -9340,6 +9340,10 @@ document.addEventListener('DOMContentLoaded', () => {
             const products = templateParsedProducts;
             let success = 0;
             let errors = 0;
+            const errorLog = []; // Store first few errors
+            
+            console.log('🚀 Starting import of', products.length, 'products');
+            console.log('Supabase client available?', typeof supabaseClient !== 'undefined' && supabaseClient);
             
             // Import products
             for (let i = 0; i < products.length; i++) {
@@ -9377,18 +9381,23 @@ document.addEventListener('DOMContentLoaded', () => {
                     
                     // Save to Supabase
                     if (typeof supabaseClient !== 'undefined' && supabaseClient) {
-                        const { error } = await supabaseClient
+                        const { data, error } = await supabaseClient
                             .from('products')
                             .insert([newProduct]);
                         
                         if (error) {
-                            console.error('Error inserting product:', error);
+                            console.error('❌ Error inserting product:', product.name, error);
+                            console.error('Product data:', newProduct);
+                            if (errorLog.length < 5) {
+                                errorLog.push(`${product.name}: ${error.message || JSON.stringify(error)}`);
+                            }
                             errors++;
                         } else {
+                            console.log('✅ Inserted:', product.name);
                             success++;
                         }
                     } else {
-                        console.warn('Supabase client not available');
+                        console.error('❌ Supabase client not available!');
                         errors++;
                     }
                     
@@ -9406,6 +9415,32 @@ document.addEventListener('DOMContentLoaded', () => {
             resultsDiv.classList.remove('hidden');
             document.getElementById('template-success-count').textContent = success;
             document.getElementById('template-error-count').textContent = errors;
+            
+            // Log errors to console
+            if (errorLog.length > 0) {
+                console.error('❌ First errors:');
+                errorLog.forEach(err => console.error('  -', err));
+                
+                // Show error details button
+                const showErrorsBtn = document.getElementById('show-errors-btn');
+                const errorDetails = document.getElementById('template-error-details');
+                const errorList = document.getElementById('template-error-list');
+                
+                if (showErrorsBtn && errorDetails && errorList) {
+                    errorList.innerHTML = errorLog.map(err => `<div style="margin-bottom: 0.25rem;">• ${err}</div>`).join('');
+                    showErrorsBtn.classList.remove('hidden');
+                    
+                    showErrorsBtn.onclick = () => {
+                        if (errorDetails.classList.contains('hidden')) {
+                            errorDetails.classList.remove('hidden');
+                            showErrorsBtn.textContent = 'Ukryj szczegóły błędów';
+                        } else {
+                            errorDetails.classList.add('hidden');
+                            showErrorsBtn.textContent = 'Pokaż szczegóły błędów';
+                        }
+                    };
+                }
+            }
             
             startBtn.innerHTML = '<i class="fa-solid fa-check"></i> Import Zakończony';
             
