@@ -4,23 +4,22 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 
 // Initialize Supabase client (reuse if already exists)
 const { createClient } = window.supabase || {};
-let supabaseClient;
 
 if (window.supabaseClient) {
     // Reuse existing client
-    supabaseClient = window.supabaseClient;
-    console.log('Supabase client reused from window');
+    console.log('✅ Supabase client reused from window');
 } else if (createClient) {
     // Create new client
-    supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    window.supabaseClient = supabaseClient;
-    console.log('Supabase client initialized successfully');
+    window.supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    console.log('✅ Supabase client initialized successfully');
 } else {
-    console.error('Supabase library not loaded. Make sure the CDN script is included.');
+    console.error('❌ Supabase library not loaded. Make sure the CDN script is included.');
 }
 
-// Alias for compatibility
-const supabase = supabaseClient;
+// Export as global variable for easy access
+if (window.supabaseClient && typeof supabaseClient === 'undefined') {
+    window.supabaseClient = window.supabaseClient;
+}
 
 // =========================================
 // PRODUCTS DATABASE FUNCTIONS
@@ -242,12 +241,12 @@ async function getAnalyticsCounts(period = 'day') {
 
 // Sign in with email and password
 window.signInWithEmail = async function(email, password) {
-    if (!supabase) {
+    if (!window.supabaseClient) {
         return { success: false, error: 'Supabase client not initialized' };
     }
     
     try {
-        const { data, error } = await supabase.auth.signInWithPassword({
+        const { data, error } = await window.supabaseClient.auth.signInWithPassword({
             email: email,
             password: password
         });
@@ -264,12 +263,12 @@ window.signInWithEmail = async function(email, password) {
 
 // Sign out
 window.signOut = async function() {
-    if (!supabase) {
+    if (!window.supabaseClient) {
         return { success: false, error: 'Supabase client not initialized' };
     }
     
     try {
-        const { error } = await supabase.auth.signOut();
+        const { error } = await window.supabaseClient.auth.signOut();
         if (error) throw error;
         
         console.log('User signed out successfully');
@@ -282,10 +281,10 @@ window.signOut = async function() {
 
 // Get current user session
 window.getCurrentSession = async function() {
-    if (!supabase) return null;
+    if (!window.supabaseClient) return null;
     
     try {
-        const { data, error } = await supabase.auth.getSession();
+        const { data, error } = await window.supabaseClient.auth.getSession();
         if (error) throw error;
         
         return data.session;
@@ -303,9 +302,9 @@ window.isAuthenticated = async function() {
 
 // Listen for auth state changes
 window.onAuthStateChange = function(callback) {
-    if (!supabase) return null;
+    if (!window.supabaseClient) return null;
     
-    return supabase.auth.onAuthStateChange((event, session) => {
+    return window.supabaseClient.auth.onAuthStateChange((event, session) => {
         console.log('Auth state changed:', event, session?.user?.email);
         callback(event, session);
     });
@@ -341,3 +340,4 @@ async function migrateLocalStorageToSupabase() {
     
     console.log('Migration completed!');
 }
+
