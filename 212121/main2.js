@@ -9147,49 +9147,79 @@ document.addEventListener('DOMContentLoaded', () => {
     // Parse CSV text helper
     function parseCSV(csvText) {
         const lines = csvText.split('\n').filter(line => line.trim());
-        if (lines.length < 2) {
-            throw new Error('CSV musi zawierać nagłówki i przynajmniej jeden produkt');
+        if (lines.length < 1) {
+            throw new Error('CSV jest pusty');
         }
         
-        const headers = lines[0].split(',').map(h => h.trim());
+        let startRow = 0;
+        let nameIdx = 0;
+        let linkIdx = 1;
+        let idIdx = 2;
         
-        // Find column indices - support multiple languages
-        let nameIdx = -1;
-        let linkIdx = -1;
-        let idIdx = -1;
+        // Check if first row is headers
+        const firstLine = lines[0].split(',').map(h => h.trim());
+        const firstCellLower = firstLine[0].toLowerCase();
         
-        headers.forEach((header, index) => {
-            const h = header.toLowerCase();
-            // Name column: Name, 产品名称, nazwa, product name
-            if (h.includes('name') || h.includes('产品名称') || h.includes('nazwa') || h.includes('产品')) {
-                nameIdx = index;
-            }
-            // Link column: Link, 微店链接, link, url
-            if (h.includes('link') || h.includes('链接') || h.includes('url') || h.includes('微店')) {
-                linkIdx = index;
-            }
-            // ID column: ID, 商品ID, id
-            if (h.includes('id') || h.includes('商品')) {
-                idIdx = index;
-            }
-        });
+        // If first row looks like headers (contains "name", "产品", etc.), skip it
+        const isHeaderRow = firstCellLower.includes('name') || 
+                           firstCellLower.includes('产品') || 
+                           firstCellLower.includes('nazwa') ||
+                           firstCellLower.includes('product');
         
-        // Validate - we need at least name and link
-        if (nameIdx === -1 || linkIdx === -1) {
-            console.error('Headers:', headers);
-            console.error('Found indices - Name:', nameIdx, 'Link:', linkIdx, 'ID:', idIdx);
-            throw new Error('CSV musi zawierać kolumny: Name, Link (lub ich odpowiedniki w innych językach)');
+        if (isHeaderRow) {
+            console.log('✅ Detected header row, parsing column indices');
+            startRow = 1;
+            const headers = firstLine;
+            
+            // Reset indices
+            nameIdx = -1;
+            linkIdx = -1;
+            idIdx = -1;
+            
+            // Find column indices
+            headers.forEach((header, index) => {
+                const h = header.toLowerCase();
+                // Name column
+                if (h.includes('name') || h.includes('产品名称') || h.includes('nazwa') || h.includes('产品')) {
+                    nameIdx = index;
+                }
+                // Link column
+                if (h.includes('link') || h.includes('链接') || h.includes('url') || h.includes('微店')) {
+                    linkIdx = index;
+                }
+                // ID column
+                if (h.includes('id') || h.includes('商品')) {
+                    idIdx = index;
+                }
+            });
+            
+            if (nameIdx === -1 || linkIdx === -1) {
+                console.error('Headers:', headers);
+                throw new Error('CSV z nagłówkami musi zawierać kolumny: Name, Link');
+            }
+        } else {
+            console.log('✅ No header row detected, assuming columns: Name (A), Link (B), ID (C)');
+            startRow = 0;
+            nameIdx = 0;
+            linkIdx = 1;
+            idIdx = 2;
         }
         
         const products = [];
-        for (let i = 1; i < lines.length; i++) {
+        for (let i = startRow; i < lines.length; i++) {
             const values = lines[i].split(',').map(v => v.trim());
+            
+            // Skip empty rows
             if (values.length < 2 || !values[nameIdx] || !values[linkIdx]) continue;
+            
+            // Skip if first column looks like a header
+            const firstVal = values[0].toLowerCase();
+            if (firstVal.includes('name') || firstVal.includes('产品')) continue;
             
             products.push({
                 name: values[nameIdx],
                 link: values[linkIdx],
-                id: idIdx >= 0 && values[idIdx] ? values[idIdx] : i
+                id: (idIdx >= 0 && values[idIdx]) ? values[idIdx] : (i + 1)
             });
         }
         
@@ -9198,6 +9228,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         
         console.log(`✅ Parsed ${products.length} products from CSV`);
+        console.log('First product:', products[0]);
         return products;
     }
     
