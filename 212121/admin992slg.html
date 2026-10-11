@@ -246,6 +246,7 @@
                 }
 
                 // Zapisz sesję - użyj localStorage zamiast sessionStorage dla pewności
+                console.log('🔐 Saving admin session...');
                 sessionStorage.setItem('admin_authenticated', 'true');
                 localStorage.setItem('admin_authenticated', 'true');
                 
@@ -255,10 +256,16 @@
                 });
                 sessionStorage.setItem('admin_user', userData);
                 localStorage.setItem('admin_user', userData);
+                
+                console.log('✅ Session saved:', {
+                    sessionStorage: sessionStorage.getItem('admin_authenticated'),
+                    localStorage: localStorage.getItem('admin_authenticated')
+                });
 
                 showMsg('Zalogowano! Przekierowywanie...', 'success');
 
                 // Natychmiastowe przekierowanie bez opóźnienia
+                console.log('🔄 Redirecting to admin panel...');
                 setTimeout(() => {
                     window.location.replace('/index.html?admin=true');
                 }, 500);

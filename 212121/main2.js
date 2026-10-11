@@ -143,12 +143,19 @@ document.addEventListener('DOMContentLoaded', () => {
                         sessionStorage.getItem('admin_authenticated') === 'true' ||
                         localStorage.getItem('admin_authenticated') === 'true';
     
-    console.log('Admin mode check:', {
-        urlParam: urlParams.get('admin'),
-        sessionStorage: sessionStorage.getItem('admin_authenticated'),
-        localStorage: localStorage.getItem('admin_authenticated'),
-        isAdminMode: isAdminMode
+    console.log('🔍 Admin mode check:', {
+        'URL': window.location.href,
+        'URL param admin': urlParams.get('admin'),
+        'sessionStorage': sessionStorage.getItem('admin_authenticated'),
+        'localStorage': localStorage.getItem('admin_authenticated'),
+        'isAdminMode': isAdminMode
     });
+    
+    if (isAdminMode) {
+        console.log('✅ Admin mode detected - showing admin panel');
+    } else {
+        console.log('❌ Admin mode NOT detected - showing normal page');
+    }
     if (!isAdminMode) {
         setTimeout(() => {
             if (typeof showPromoPopup === 'function') {
