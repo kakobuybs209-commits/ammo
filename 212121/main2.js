@@ -9396,18 +9396,20 @@ document.addEventListener('DOMContentLoaded', () => {
                     
                     // Create product object
                     const newProduct = {
+                        id: itemId, // Use Weidian ID as primary key
                         name: product.name,
                         price: 0,
+                        currency: 'PLN',
                         category: 'Uncategorized',
-                        image_url: null,
-                        agent_links: JSON.stringify({
-                            weidian: product.link
-                        }),
-                        seller_name: 'Imported',
-                        created_at: new Date().toISOString(),
-                        is_pinned: false,
+                        image: null,
+                        link: product.link, // Store Weidian link
+                        agent: 'Weidian',
+                        seller: 'Imported',
+                        status: 'active',
                         clicks: 0,
-                        views: 0
+                        popular: false,
+                        is_new: true,
+                        created_at: new Date().toISOString()
                     };
                     
                     // Save to Supabase
