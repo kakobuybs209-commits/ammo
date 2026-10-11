@@ -1408,25 +1408,72 @@
 
     <!-- Template Import Modal -->
     <div class="modal-overlay hidden" id="template-import-modal">
-        <div class="modal-content" style="max-width: 600px;">
+        <div class="modal-content" style="max-width: 700px;">
             <div class="modal-header">
                 <h2><i class="fa-solid fa-file-csv"></i> Template Import CSV</h2>
                 <button class="close-btn" onclick="document.getElementById('template-import-modal').classList.add('hidden'); document.body.classList.remove('modal-open');"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <div class="modal-body">
                 <div class="import-section">
-                    <h3 style="font-size: 1rem; margin-bottom: 0.5rem; color: var(--text-secondary);">Import z prostego CSV</h3>
                     <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1rem;">
-                        Format: Name, Link, ID<br>
+                        Format: <strong>Name, Link, ID</strong><br>
                         <a href="#" id="download-csv-template" style="color: #ffffff; text-decoration: underline;">Pobierz szablon CSV</a>
                     </p>
                     
-                    <input type="file" id="template-csv-input" accept=".csv" style="display: none;">
-                    <button class="btn btn-secondary" id="select-template-csv-btn" style="width: 100%; justify-content: center; margin-bottom: 1rem;">
-                        <i class="fa-solid fa-folder-open"></i> Wybierz plik CSV
-                    </button>
+                    <!-- Import method tabs -->
+                    <div style="display: flex; gap: 0.5rem; margin-bottom: 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                        <button class="template-tab active" data-tab="file" style="padding: 0.75rem 1.5rem; background: transparent; border: none; color: var(--text-secondary); cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.2s;">
+                            <i class="fa-solid fa-folder-open"></i> Plik CSV
+                        </button>
+                        <button class="template-tab" data-tab="google" style="padding: 0.75rem 1.5rem; background: transparent; border: none; color: var(--text-secondary); cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.2s;">
+                            <i class="fa-brands fa-google"></i> Google Sheets
+                        </button>
+                        <button class="template-tab" data-tab="paste" style="padding: 0.75rem 1.5rem; background: transparent; border: none; color: var(--text-secondary); cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.2s;">
+                            <i class="fa-solid fa-paste"></i> Wklej CSV
+                        </button>
+                    </div>
                     
-                    <div id="template-file-info" class="hidden" style="background: rgba(255, 255, 255,0.05); border: 1px solid rgba(255, 255, 255,0.1); padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
+                    <!-- File Upload Tab -->
+                    <div id="template-tab-file" class="template-tab-content">
+                        <input type="file" id="template-csv-input" accept=".csv" style="display: none;">
+                        <button class="btn btn-secondary" id="select-template-csv-btn" style="width: 100%; justify-content: center; margin-bottom: 1rem;">
+                            <i class="fa-solid fa-folder-open"></i> Wybierz plik CSV
+                        </button>
+                    </div>
+                    
+                    <!-- Google Sheets Tab -->
+                    <div id="template-tab-google" class="template-tab-content hidden">
+                        <label style="display: block; color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 0.5rem;">
+                            Link do Google Sheets
+                        </label>
+                        <input 
+                            type="text" 
+                            id="template-google-link" 
+                            placeholder="https://docs.google.com/spreadsheets/d/..."
+                            style="width: 100%; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 0.75rem; color: var(--text-primary); margin-bottom: 1rem;"
+                        >
+                        <button class="btn btn-secondary" id="load-google-sheets-btn" style="width: 100%; justify-content: center;">
+                            <i class="fa-brands fa-google"></i> Załaduj z Google Sheets
+                        </button>
+                    </div>
+                    
+                    <!-- Paste Text Tab -->
+                    <div id="template-tab-paste" class="template-tab-content hidden">
+                        <label style="display: block; color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 0.5rem;">
+                            Wklej dane CSV (jeden wiersz na linię)
+                        </label>
+                        <textarea 
+                            id="template-paste-text" 
+                            placeholder="Name,Link,ID&#10;Nike AF1,https://weidian.com/item.html?itemID=123,1&#10;Jordan 1,https://weidian.com/item.html?itemID=456,2"
+                            style="width: 100%; min-height: 200px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 1rem; color: var(--text-primary); font-family: monospace; font-size: 0.85rem; resize: vertical; margin-bottom: 1rem;"
+                        ></textarea>
+                        <button class="btn btn-secondary" id="parse-paste-text-btn" style="width: 100%; justify-content: center;">
+                            <i class="fa-solid fa-check"></i> Parsuj dane
+                        </button>
+                    </div>
+                    
+                    <!-- File/Data Info -->
+                    <div id="template-file-info" class="hidden" style="background: rgba(255, 255, 255,0.05); border: 1px solid rgba(255, 255, 255,0.1); padding: 1rem; border-radius: 8px; margin-bottom: 1rem; margin-top: 1rem;">
                         <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
                             <i class="fa-solid fa-file-csv" style="color: #10b981;"></i>
                             <span id="template-file-name" style="color: var(--text-primary); font-weight: 600;"></span>
@@ -1436,6 +1483,7 @@
                         </div>
                     </div>
                     
+                    <!-- Progress -->
                     <div id="template-import-progress" class="hidden" style="margin-bottom: 1rem;">
                         <div style="background: rgba(255,255,255,0.05); border-radius: 8px; height: 8px; overflow: hidden; margin-bottom: 0.5rem;">
                             <div id="template-progress-bar" style="background: #10b981; height: 100%; width: 0%; transition: width 0.3s;"></div>
@@ -1443,6 +1491,7 @@
                         <div id="template-import-status" style="color: var(--text-muted); font-size: 0.85rem; text-align: center;"></div>
                     </div>
                     
+                    <!-- Results -->
                     <div id="template-import-results" class="hidden" style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.2); padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
                         <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
                             <span style="color: var(--text-secondary);">Zaimportowano:</span>
@@ -1454,6 +1503,7 @@
                         </div>
                     </div>
                     
+                    <!-- Start Import Button -->
                     <button class="btn btn-primary" id="start-template-import-btn" disabled style="width: 100%; justify-content: center;">
                         <i class="fa-solid fa-upload"></i> Rozpocznij Import
                     </button>

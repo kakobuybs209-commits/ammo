@@ -9092,6 +9092,7 @@ window.showSettingsPane = showSettingsPane;
 
 // =========================================
 // TEMPLATE IMPORT - Simple CSV Import (Name, Link, ID)
+// Supports: File upload, Google Sheets, Paste text
 // =========================================
 
 window.openTemplateImportModal = function() {
@@ -9102,46 +9103,181 @@ window.openTemplateImportModal = function() {
     }
 };
 
+// Global variable to store parsed products
+let templateParsedProducts = [];
+
 document.addEventListener('DOMContentLoaded', () => {
     const selectBtn = document.getElementById('select-template-csv-btn');
     const fileInput = document.getElementById('template-csv-input');
     const startBtn = document.getElementById('start-template-import-btn');
     const downloadTemplateBtn = document.getElementById('download-csv-template');
+    const googleLinkInput = document.getElementById('template-google-link');
+    const loadGoogleBtn = document.getElementById('load-google-sheets-btn');
+    const pasteText = document.getElementById('template-paste-text');
+    const parsePasteBtn = document.getElementById('parse-paste-text-btn');
     
-    if (!selectBtn || !fileInput || !startBtn) {
+    if (!startBtn) {
         console.warn('Template import elements not found');
         return;
     }
     
-    // Select CSV file
-    selectBtn.addEventListener('click', () => {
-        fileInput.click();
+    // Tab switching
+    const tabs = document.querySelectorAll('.template-tab');
+    const tabContents = document.querySelectorAll('.template-tab-content');
+    
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            const targetTab = tab.getAttribute('data-tab');
+            
+            // Update active tab
+            tabs.forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            
+            // Show target content
+            tabContents.forEach(content => {
+                if (content.id === `template-tab-${targetTab}`) {
+                    content.classList.remove('hidden');
+                } else {
+                    content.classList.add('hidden');
+                }
+            });
+        });
     });
     
-    // Handle file selection
-    fileInput.addEventListener('change', (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
+    // Parse CSV text helper
+    function parseCSV(csvText) {
+        const lines = csvText.split('\n').filter(line => line.trim());
+        if (lines.length < 2) {
+            throw new Error('CSV musi zawierać nagłówki i przynajmniej jeden produkt');
+        }
         
+        const headers = lines[0].split(',').map(h => h.trim());
+        
+        // Validate headers
+        if (!headers.includes('Name') || !headers.includes('Link')) {
+            throw new Error('CSV musi zawierać kolumny: Name, Link');
+        }
+        
+        const products = [];
+        for (let i = 1; i < lines.length; i++) {
+            const values = lines[i].split(',').map(v => v.trim());
+            if (values.length < 2) continue;
+            
+            const nameIdx = headers.indexOf('Name');
+            const linkIdx = headers.indexOf('Link');
+            const idIdx = headers.indexOf('ID');
+            
+            products.push({
+                name: values[nameIdx],
+                link: values[linkIdx],
+                id: idIdx >= 0 ? values[idIdx] : i
+            });
+        }
+        
+        return products;
+    }
+    
+    // Show file info
+    function showFileInfo(source, count) {
         const fileInfo = document.getElementById('template-file-info');
         const fileName = document.getElementById('template-file-name');
         const rowCount = document.getElementById('template-row-count');
         
-        fileName.textContent = file.name;
+        fileName.textContent = source;
+        rowCount.textContent = count;
+        fileInfo.classList.remove('hidden');
+        startBtn.disabled = false;
+    }
+    
+    // 1. FILE UPLOAD
+    if (selectBtn && fileInput) {
+        selectBtn.addEventListener('click', () => {
+            fileInput.click();
+        });
         
-        // Parse CSV to count rows
-        const reader = new FileReader();
-        reader.onload = (event) => {
-            const csv = event.target.result;
-            const lines = csv.split('\n').filter(line => line.trim());
-            const dataRows = lines.length - 1; // Exclude header
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
             
-            rowCount.textContent = dataRows;
-            fileInfo.classList.remove('hidden');
-            startBtn.disabled = false;
-        };
-        reader.readAsText(file);
-    });
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                try {
+                    const csv = event.target.result;
+                    templateParsedProducts = parseCSV(csv);
+                    showFileInfo(file.name, templateParsedProducts.length);
+                } catch (error) {
+                    alert('Błąd parsowania CSV: ' + error.message);
+                }
+            };
+            reader.readAsText(file);
+        });
+    }
+    
+    // 2. GOOGLE SHEETS
+    if (loadGoogleBtn && googleLinkInput) {
+        loadGoogleBtn.addEventListener('click', async () => {
+            const url = googleLinkInput.value.trim();
+            if (!url) {
+                alert('Wklej link do Google Sheets');
+                return;
+            }
+            
+            loadGoogleBtn.disabled = true;
+            loadGoogleBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Ładowanie...';
+            
+            try {
+                // Extract sheet ID from URL
+                const sheetIdMatch = url.match(/\/d\/([a-zA-Z0-9-_]+)/);
+                if (!sheetIdMatch) {
+                    throw new Error('Nieprawidłowy link Google Sheets');
+                }
+                
+                const sheetId = sheetIdMatch[1];
+                
+                // Extract gid if present
+                const gidMatch = url.match(/[#&]gid=([0-9]+)/);
+                const gid = gidMatch ? gidMatch[1] : '0';
+                
+                // Construct export URL
+                const exportUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv&gid=${gid}`;
+                
+                // Fetch CSV data (note: this requires CORS to be enabled or a proxy)
+                const response = await fetch(exportUrl);
+                if (!response.ok) {
+                    throw new Error('Nie można pobrać danych. Upewnij się że arkusz jest publiczny.');
+                }
+                
+                const csvText = await response.text();
+                templateParsedProducts = parseCSV(csvText);
+                showFileInfo('Google Sheets', templateParsedProducts.length);
+                
+            } catch (error) {
+                alert('Błąd ładowania Google Sheets: ' + error.message);
+                console.error(error);
+            } finally {
+                loadGoogleBtn.disabled = false;
+                loadGoogleBtn.innerHTML = '<i class="fa-brands fa-google"></i> Załaduj z Google Sheets';
+            }
+        });
+    }
+    
+    // 3. PASTE TEXT
+    if (parsePasteBtn && pasteText) {
+        parsePasteBtn.addEventListener('click', () => {
+            const text = pasteText.value.trim();
+            if (!text) {
+                alert('Wklej dane CSV');
+                return;
+            }
+            
+            try {
+                templateParsedProducts = parseCSV(text);
+                showFileInfo('Wklejony tekst', templateParsedProducts.length);
+            } catch (error) {
+                alert('Błąd parsowania: ' + error.message);
+            }
+        });
+    }
     
     // Download CSV template
     if (downloadTemplateBtn) {
@@ -9160,9 +9296,8 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Start import
     startBtn.addEventListener('click', async () => {
-        const file = fileInput.files[0];
-        if (!file) {
-            alert('Wybierz plik CSV');
+        if (templateParsedProducts.length === 0) {
+            alert('Najpierw załaduj dane CSV');
             return;
         }
         
@@ -9178,122 +9313,91 @@ document.addEventListener('DOMContentLoaded', () => {
         resultsDiv.classList.add('hidden');
         
         try {
-            const reader = new FileReader();
-            reader.onload = async (event) => {
-                const csv = event.target.result;
-                const lines = csv.split('\n').filter(line => line.trim());
-                const headers = lines[0].split(',').map(h => h.trim());
+            const products = templateParsedProducts;
+            let success = 0;
+            let errors = 0;
+            
+            // Import products
+            for (let i = 0; i < products.length; i++) {
+                const product = products[i];
+                const progress = ((i + 1) / products.length) * 100;
+                progressBar.style.width = progress + '%';
+                statusDiv.textContent = `Importowanie ${i + 1}/${products.length}: ${product.name}`;
                 
-                // Validate headers
-                if (!headers.includes('Name') || !headers.includes('Link')) {
-                    throw new Error('CSV musi zawierać kolumny: Name, Link');
-                }
-                
-                const products = [];
-                for (let i = 1; i < lines.length; i++) {
-                    const values = lines[i].split(',').map(v => v.trim());
-                    if (values.length < 2) continue;
+                try {
+                    // Extract itemID from Weidian link
+                    const itemIdMatch = product.link.match(/itemID=(\d+)/);
+                    const itemId = itemIdMatch ? itemIdMatch[1] : null;
                     
-                    const nameIdx = headers.indexOf('Name');
-                    const linkIdx = headers.indexOf('Link');
-                    const idIdx = headers.indexOf('ID');
+                    if (!itemId) {
+                        console.warn('No itemID found in link:', product.link);
+                        errors++;
+                        continue;
+                    }
                     
-                    products.push({
-                        name: values[nameIdx],
-                        link: values[linkIdx],
-                        id: idIdx >= 0 ? values[idIdx] : i
-                    });
-                }
-                
-                console.log(`Parsed ${products.length} products from CSV`);
-                
-                let success = 0;
-                let errors = 0;
-                
-                // Import products
-                for (let i = 0; i < products.length; i++) {
-                    const product = products[i];
-                    const progress = ((i + 1) / products.length) * 100;
-                    progressBar.style.width = progress + '%';
-                    statusDiv.textContent = `Importowanie ${i + 1}/${products.length}: ${product.name}`;
+                    // Create product object
+                    const newProduct = {
+                        name: product.name,
+                        price: 0,
+                        category: 'Uncategorized',
+                        image_url: null,
+                        agent_links: JSON.stringify({
+                            weidian: product.link
+                        }),
+                        seller_name: 'Imported',
+                        created_at: new Date().toISOString(),
+                        is_pinned: false,
+                        clicks: 0,
+                        views: 0
+                    };
                     
-                    try {
-                        // Extract itemID from Weidian link
-                        const itemIdMatch = product.link.match(/itemID=(\d+)/);
-                        const itemId = itemIdMatch ? itemIdMatch[1] : null;
+                    // Save to Supabase
+                    if (typeof supabaseClient !== 'undefined' && supabaseClient) {
+                        const { error } = await supabaseClient
+                            .from('products')
+                            .insert([newProduct]);
                         
-                        if (!itemId) {
-                            console.warn('No itemID found in link:', product.link);
+                        if (error) {
+                            console.error('Error inserting product:', error);
                             errors++;
-                            continue;
-                        }
-                        
-                        // Create product object
-                        const newProduct = {
-                            name: product.name,
-                            price: 0, // Will be updated later
-                            category: 'Uncategorized',
-                            image_url: null,
-                            agent_links: JSON.stringify({
-                                weidian: product.link
-                            }),
-                            seller_name: 'Imported',
-                            created_at: new Date().toISOString(),
-                            is_pinned: false,
-                            clicks: 0,
-                            views: 0
-                        };
-                        
-                        // Save to Supabase
-                        if (typeof supabaseClient !== 'undefined' && supabaseClient) {
-                            const { error } = await supabaseClient
-                                .from('products')
-                                .insert([newProduct]);
-                            
-                            if (error) {
-                                console.error('Error inserting product:', error);
-                                errors++;
-                            } else {
-                                success++;
-                            }
                         } else {
-                            console.warn('Supabase client not available');
-                            errors++;
+                            success++;
                         }
-                        
-                        // Small delay to avoid rate limiting
-                        await new Promise(resolve => setTimeout(resolve, 100));
-                        
-                    } catch (err) {
-                        console.error('Error importing product:', product.name, err);
+                    } else {
+                        console.warn('Supabase client not available');
                         errors++;
                     }
+                    
+                    // Small delay to avoid rate limiting
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                    
+                } catch (err) {
+                    console.error('Error importing product:', product.name, err);
+                    errors++;
                 }
-                
-                // Show results
-                progressDiv.classList.add('hidden');
-                resultsDiv.classList.remove('hidden');
-                document.getElementById('template-success-count').textContent = success;
-                document.getElementById('template-error-count').textContent = errors;
-                
-                startBtn.innerHTML = '<i class="fa-solid fa-check"></i> Import Zakończony';
-                
-                if (typeof showToast === 'function') {
-                    showToast(`Zaimportowano ${success} produktów`, 'success');
-                }
-                
-                // Reload products grid
-                if (typeof loadProductsGrid === 'function') {
-                    setTimeout(() => loadProductsGrid(), 1000);
-                }
-                
-                // Reload admin products if in admin panel
-                if (typeof loadAdminProducts === 'function') {
-                    setTimeout(() => loadAdminProducts(), 1000);
-                }
-            };
+            }
             
-            reader.readAsText(file);
+            // Show results
+            progressDiv.classList.add('hidden');
+            resultsDiv.classList.remove('hidden');
+            document.getElementById('template-success-count').textContent = success;
+            document.getElementById('template-error-count').textContent = errors;
+            
+            startBtn.innerHTML = '<i class="fa-solid fa-check"></i> Import Zakończony';
+            
+            if (typeof showToast === 'function') {
+                showToast(`Zaimportowano ${success} produktów`, 'success');
+            }
+            
+            // Reload products grid
+            if (typeof loadProductsGrid === 'function') {
+                setTimeout(() => loadProductsGrid(), 1000);
+            }
+            
+            // Reload admin products if in admin panel
+            if (typeof loadAdminProducts === 'function') {
+                setTimeout(() => loadAdminProducts(), 1000);
+            }
             
         } catch (error) {
             console.error('Import error:', error);
