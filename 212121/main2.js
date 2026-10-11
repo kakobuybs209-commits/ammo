@@ -9413,12 +9413,6 @@ document.addEventListener('DOMContentLoaded', () => {
                         if (scrapeResult.success && scrapeResult.data) {
                             scrapedData = scrapeResult.data;
                             console.log('✅ Scraped data:', scrapedData);
-                            
-                            // Validate scraped data
-                            if (!scrapedData.image || scrapedData.image.includes('店铺')) {
-                                console.warn('⚠️ Invalid image scraped (store logo), skipping scraping');
-                                scrapedData = null;
-                            }
                         } else {
                             console.warn('⚠️ Scraping failed:', scrapeResult.error);
                         }

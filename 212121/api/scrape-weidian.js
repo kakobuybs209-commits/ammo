@@ -137,10 +137,17 @@ function extractProductData(html, itemId) {
         // Try price in HTML (¥199, ¥199.00, 199元, etc.)
         if (data.price === 0) {
             const pricePatterns = [
+                // Chinese Yuan symbols
                 /[¥￥][\s]*([0-9]+\.?[0-9]*)/,
-                /price["']?:\s*["']?([0-9]+\.?[0-9]*)/i,
                 /([0-9]+\.?[0-9]*)[\s]*元/,
-                /"price":\s*"?([0-9]+\.?[0-9]*)"?/
+                // JSON price fields
+                /"price":\s*"?([0-9]+\.?[0-9]*)"?/i,
+                /"productPrice":\s*"?([0-9]+\.?[0-9]*)"?/i,
+                /"itemPrice":\s*"?([0-9]+\.?[0-9]*)"?/i,
+                // Data attributes
+                /data-price="([0-9]+\.?[0-9]*)"/i,
+                // Class-based patterns
+                /class="[^"]*price[^"]*"[^>]*>[\s¥￥]*([0-9]+\.?[0-9]*)/i
             ];
             
             for (const pattern of pricePatterns) {
@@ -159,22 +166,40 @@ function extractProductData(html, itemId) {
     // Method 4: Extract image from common patterns
     if (!data.image) {
         const imagePatterns = [
+            // Weidian mobile site patterns
             /"mainImage":"([^"]+)"/,
             /"img":"([^"]+)"/,
+            /"imgUrl":"([^"]+)"/,
             /"thumb":"([^"]+)"/,
+            // Standard img tags
+            /<img[^>]+class="[^"]*swiper-slide-img[^"]*"[^>]+src="([^"]+)"/i,
+            /<img[^>]+class="[^"]*goods-img[^"]*"[^>]+src="([^"]+)"/i,
+            /<img[^>]+class="[^"]*product-img[^"]*"[^>]+src="([^"]+)"/i,
+            // Data attributes
             /data-src="(https?:\/\/[^"]+\.(?:jpg|jpeg|png|webp)[^"]*)"/i,
-            /src="(https?:\/\/[^"]+\.(?:jpg|jpeg|png|webp)[^"]*)"/i
+            /data-original="(https?:\/\/[^"]+\.(?:jpg|jpeg|png|webp)[^"]*)"/i,
+            // Generic img with URL
+            /<img[^>]+src="(https?:\/\/[^"]+\.(?:jpg|jpeg|png|webp)[^"]*)"/i,
+            // Weidian CDN patterns
+            /https?:\/\/(?:si\.geilicdn\.com|img\.alicdn\.com|gdp\.alicdn\.com|gw\.alicdn\.com)\/[^"\s]+\.(?:jpg|jpeg|png|webp)/i
         ];
         
         for (const pattern of imagePatterns) {
             const match = html.match(pattern);
             if (match) {
-                data.image = match[1].replace(/\\u002F/g, '/').replace(/\\/g, '');
+                let imageUrl = match[1] || match[0];
+                imageUrl = imageUrl.replace(/\\u002F/g, '/').replace(/\\/g, '');
+                
                 // Convert to HTTPS if needed
-                if (data.image.startsWith('//')) {
-                    data.image = 'https:' + data.image;
+                if (imageUrl.startsWith('//')) {
+                    imageUrl = 'https:' + imageUrl;
                 }
-                break;
+                
+                // Skip if it's the store logo (contains 店铺 or specific patterns)
+                if (!imageUrl.includes('店铺') && !imageUrl.includes('default') && !imageUrl.includes('avatar')) {
+                    data.image = imageUrl;
+                    break;
+                }
             }
         }
     }
