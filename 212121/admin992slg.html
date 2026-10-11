@@ -215,6 +215,25 @@
             const email = document.getElementById('email').value.trim();
             const password = document.getElementById('password').value;
 
+            // TEMPORARY DEV BYPASS - REMOVE IN PRODUCTION
+            if (email === 'amunicja@strona.com' && password === 'admin123') {
+                sessionStorage.setItem('admin_authenticated', 'true');
+                localStorage.setItem('admin_authenticated', 'true');
+                
+                const userData = JSON.stringify({
+                    email: email,
+                    id: 'dev-bypass-id'
+                });
+                sessionStorage.setItem('admin_user', userData);
+                localStorage.setItem('admin_user', userData);
+
+                showMsg('Zalogowano! Przekierowywanie...', 'success');
+                setTimeout(() => {
+                    window.location.replace('/index.html?admin=true');
+                }, 500);
+                return;
+            }
+
             try {
                 const { data, error } = await sb.auth.signInWithPassword({ email, password });
 
