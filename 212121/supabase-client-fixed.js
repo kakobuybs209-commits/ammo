@@ -28,7 +28,7 @@ if (window.supabaseClient && typeof supabaseClient === 'undefined') {
 // Get all products from Supabase
 async function getProductsFromDB() {
     try {
-        const { data, error } = await supabase
+        const { data, error } = await window.supabaseClient
             .from('products')
             .select('*')
             .order('created_at', { ascending: false });
@@ -44,7 +44,7 @@ async function getProductsFromDB() {
 // Save product to Supabase
 async function saveProductToDB(product) {
     try {
-        const { data, error } = await supabase
+        const { data, error } = await window.supabaseClient
             .from('products')
             .insert([{
                 id: product.id,
@@ -71,7 +71,7 @@ async function saveProductToDB(product) {
 // Update product in Supabase
 async function updateProductInDB(id, updates) {
     try {
-        const { data, error } = await supabase
+        const { data, error } = await window.supabaseClient
             .from('products')
             .update(updates)
             .eq('id', id)
@@ -88,7 +88,7 @@ async function updateProductInDB(id, updates) {
 // Delete product from Supabase
 async function deleteProductFromDB(id) {
     try {
-        const { error } = await supabase
+        const { error } = await window.supabaseClient
             .from('products')
             .delete()
             .eq('id', id);
@@ -108,7 +108,7 @@ async function deleteProductFromDB(id) {
 // Get all sellers from Supabase
 async function getSellersFromDB() {
     try {
-        const { data, error } = await supabase
+        const { data, error } = await window.supabaseClient
             .from('sellers')
             .select('*')
             .order('created_at', { ascending: false });
@@ -124,7 +124,7 @@ async function getSellersFromDB() {
 // Save seller to Supabase
 async function saveSellerToDB(seller) {
     try {
-        const { data, error } = await supabase
+        const { data, error } = await window.supabaseClient
             .from('sellers')
             .insert([{
                 name: seller.name,
@@ -146,7 +146,7 @@ async function saveSellerToDB(seller) {
 // Delete seller from Supabase
 async function deleteSellerFromDB(id) {
     try {
-        const { error } = await supabase
+        const { error } = await window.supabaseClient
             .from('sellers')
             .delete()
             .eq('id', id);
@@ -166,7 +166,7 @@ async function deleteSellerFromDB(id) {
 // Save analytics event (visit, click, etc.)
 async function saveAnalyticsEvent(eventType, metadata = {}) {
     try {
-        const { data, error } = await supabase
+        const { data, error } = await window.supabaseClient
             .from('analytics')
             .insert([{
                 event_type: eventType,
@@ -186,7 +186,7 @@ async function saveAnalyticsEvent(eventType, metadata = {}) {
 // Get analytics data for dashboard
 async function getAnalyticsData(startDate, endDate) {
     try {
-        const { data, error } = await supabase
+        const { data, error } = await window.supabaseClient
             .from('analytics')
             .select('*')
             .gte('timestamp', startDate)
@@ -218,7 +218,7 @@ async function getAnalyticsCounts(period = 'day') {
                 break;
         }
         
-        const { data, error } = await supabase
+        const { data, error } = await window.supabaseClient
             .from('analytics')
             .select('event_type')
             .gte('timestamp', startDate.toISOString());

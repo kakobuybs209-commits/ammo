@@ -9385,25 +9385,51 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 try {
                     // Extract itemID from Weidian link
-                    const itemIdMatch = product.link.match(/itemID=(\d+)/);
+                    const itemIdMatch = product.link.match(/itemID[=%](\d+)/i);
                     const itemId = itemIdMatch ? itemIdMatch[1] : null;
                     
                     if (!itemId) {
-                        console.warn('No itemID found in link:', product.link);
+                        console.warn('⚠️ No itemID found in link:', product.link);
+                        if (errorLog.length < 5) {
+                            errorLog.push(`${product.name}: Invalid Weidian URL`);
+                        }
                         errors++;
                         continue;
                     }
                     
-                    // Create product object
+                    // Scrape product data from Weidian
+                    console.log(`🔍 Scraping product: ${product.name} (ID: ${itemId})`);
+                    let scrapedData = null;
+                    
+                    try {
+                        const scrapeResponse = await fetch('/.netlify/functions/scrape-weidian', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ url: product.link })
+                        });
+                        
+                        const scrapeResult = await scrapeResponse.json();
+                        
+                        if (scrapeResult.success && scrapeResult.data) {
+                            scrapedData = scrapeResult.data;
+                            console.log('✅ Scraped data:', scrapedData);
+                        } else {
+                            console.warn('⚠️ Scraping failed:', scrapeResult.error);
+                        }
+                    } catch (scrapeError) {
+                        console.warn('⚠️ Scraping error:', scrapeError.message);
+                    }
+                    
+                    // Create product object with scraped data or defaults
                     const newProduct = {
-                        id: itemId, // Use Weidian ID as primary key
-                        name: product.name,
-                        price: 0,
-                        currency: 'PLN',
-                        category: 'Uncategorized',
-                        image: null,
-                        link: product.link, // Store Weidian link
-                        seller: 'Imported',
+                        id: itemId,
+                        name: scrapedData?.name || product.name,
+                        price: scrapedData?.price || 299, // Default price if scraping fails
+                        currency: scrapedData?.currency || 'CNY',
+                        category: 'Shoes', // Default category
+                        image: scrapedData?.image || null,
+                        link: product.link,
+                        seller: 'Weidian',
                         status: 'active',
                         clicks: 0,
                         popular: false,
@@ -9412,14 +9438,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     };
                     
                     // Save to Supabase
-                    if (typeof supabaseClient !== 'undefined' && supabaseClient) {
-                        const { data, error } = await supabaseClient
+                    if (typeof window.supabaseClient !== 'undefined' && window.supabaseClient) {
+                        const { data, error } = await window.supabaseClient
                             .from('products')
                             .insert([newProduct]);
                         
                         if (error) {
                             console.error('❌ Error inserting product:', product.name, error);
-                            console.error('Product data:', newProduct);
                             if (errorLog.length < 5) {
                                 errorLog.push(`${product.name}: ${error.message || JSON.stringify(error)}`);
                             }
@@ -9433,8 +9458,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         errors++;
                     }
                     
-                    // Small delay to avoid rate limiting
-                    await new Promise(resolve => setTimeout(resolve, 100));
+                    // Delay to avoid rate limiting (scraping is slow, so can be shorter)
+                    await new Promise(resolve => setTimeout(resolve, 300));
                     
                 } catch (err) {
                     console.error('Error importing product:', product.name, err);
