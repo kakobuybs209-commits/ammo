@@ -579,6 +579,7 @@
                     </div>
                     <div style="display: flex; gap: 1rem;">
                         <button class="btn btn-secondary" id="bulk-import-btn" onclick="openBulkScrapeModal()" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);"><i class="fa-solid fa-file-import"></i> Bulk Import</button>
+                        <button class="btn btn-secondary" id="template-import-btn" onclick="openTemplateImportModal()" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);"><i class="fa-solid fa-file-csv"></i> Template Import</button>
                         <button class="btn btn-secondary" id="export-products-btn" onclick="exportProductsCSV()" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);"><i class="fa-solid fa-file-export"></i> Eksport CSV</button>
                         <button class="btn btn-primary glow-btn" id="dodaj-przedmiot-btn" onclick="openAddProductModal()"><i class="fa-solid fa-plus"></i> Dodaj Przedmiot</button>
                     </div>
@@ -1399,6 +1400,62 @@
                     
                     <button class="btn btn-primary" id="start-bulk-scrape-btn" style="width: 100%; justify-content: center;">
                         <i class="fa-solid fa-robot"></i> Rozpocznij Scraping
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Template Import Modal -->
+    <div class="modal-overlay hidden" id="template-import-modal">
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+                <h2><i class="fa-solid fa-file-csv"></i> Template Import CSV</h2>
+                <button class="close-btn" onclick="document.getElementById('template-import-modal').classList.add('hidden'); document.body.classList.remove('modal-open');"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="import-section">
+                    <h3 style="font-size: 1rem; margin-bottom: 0.5rem; color: var(--text-secondary);">Import z prostego CSV</h3>
+                    <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1rem;">
+                        Format: Name, Link, ID<br>
+                        <a href="#" id="download-csv-template" style="color: #ffffff; text-decoration: underline;">Pobierz szablon CSV</a>
+                    </p>
+                    
+                    <input type="file" id="template-csv-input" accept=".csv" style="display: none;">
+                    <button class="btn btn-secondary" id="select-template-csv-btn" style="width: 100%; justify-content: center; margin-bottom: 1rem;">
+                        <i class="fa-solid fa-folder-open"></i> Wybierz plik CSV
+                    </button>
+                    
+                    <div id="template-file-info" class="hidden" style="background: rgba(255, 255, 255,0.05); border: 1px solid rgba(255, 255, 255,0.1); padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
+                        <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                            <i class="fa-solid fa-file-csv" style="color: #10b981;"></i>
+                            <span id="template-file-name" style="color: var(--text-primary); font-weight: 600;"></span>
+                        </div>
+                        <div style="color: var(--text-secondary); font-size: 0.85rem;">
+                            <span id="template-row-count"></span> produktów do importu
+                        </div>
+                    </div>
+                    
+                    <div id="template-import-progress" class="hidden" style="margin-bottom: 1rem;">
+                        <div style="background: rgba(255,255,255,0.05); border-radius: 8px; height: 8px; overflow: hidden; margin-bottom: 0.5rem;">
+                            <div id="template-progress-bar" style="background: #10b981; height: 100%; width: 0%; transition: width 0.3s;"></div>
+                        </div>
+                        <div id="template-import-status" style="color: var(--text-muted); font-size: 0.85rem; text-align: center;"></div>
+                    </div>
+                    
+                    <div id="template-import-results" class="hidden" style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.2); padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                            <span style="color: var(--text-secondary);">Zaimportowano:</span>
+                            <span id="template-success-count" style="color: #10b981; font-weight: 600;"></span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between;">
+                            <span style="color: var(--text-secondary);">Błędy:</span>
+                            <span id="template-error-count" style="color: #ef4444; font-weight: 600;"></span>
+                        </div>
+                    </div>
+                    
+                    <button class="btn btn-primary" id="start-template-import-btn" disabled style="width: 100%; justify-content: center;">
+                        <i class="fa-solid fa-upload"></i> Rozpocznij Import
                     </button>
                 </div>
             </div>

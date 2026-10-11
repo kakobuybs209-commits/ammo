@@ -9088,3 +9088,219 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 window.showSettingsPane = showSettingsPane;
+
+
+// =========================================
+// TEMPLATE IMPORT - Simple CSV Import (Name, Link, ID)
+// =========================================
+
+window.openTemplateImportModal = function() {
+    const modal = document.getElementById('template-import-modal');
+    if (modal) {
+        modal.classList.remove('hidden');
+        document.body.classList.add('modal-open');
+    }
+};
+
+document.addEventListener('DOMContentLoaded', () => {
+    const selectBtn = document.getElementById('select-template-csv-btn');
+    const fileInput = document.getElementById('template-csv-input');
+    const startBtn = document.getElementById('start-template-import-btn');
+    const downloadTemplateBtn = document.getElementById('download-csv-template');
+    
+    if (!selectBtn || !fileInput || !startBtn) {
+        console.warn('Template import elements not found');
+        return;
+    }
+    
+    // Select CSV file
+    selectBtn.addEventListener('click', () => {
+        fileInput.click();
+    });
+    
+    // Handle file selection
+    fileInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        
+        const fileInfo = document.getElementById('template-file-info');
+        const fileName = document.getElementById('template-file-name');
+        const rowCount = document.getElementById('template-row-count');
+        
+        fileName.textContent = file.name;
+        
+        // Parse CSV to count rows
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            const csv = event.target.result;
+            const lines = csv.split('\n').filter(line => line.trim());
+            const dataRows = lines.length - 1; // Exclude header
+            
+            rowCount.textContent = dataRows;
+            fileInfo.classList.remove('hidden');
+            startBtn.disabled = false;
+        };
+        reader.readAsText(file);
+    });
+    
+    // Download CSV template
+    if (downloadTemplateBtn) {
+        downloadTemplateBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            const csvContent = 'Name,Link,ID\nNike AF1 White,https://weidian.com/item.html?itemID=4438424861,1\nJordan 1 High Black Toe,https://weidian.com/item.html?itemID=4401171332,2\n';
+            const blob = new Blob([csvContent], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'template-import.csv';
+            a.click();
+            URL.revokeObjectURL(url);
+        });
+    }
+    
+    // Start import
+    startBtn.addEventListener('click', async () => {
+        const file = fileInput.files[0];
+        if (!file) {
+            alert('Wybierz plik CSV');
+            return;
+        }
+        
+        startBtn.disabled = true;
+        startBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Importowanie...';
+        
+        const progressDiv = document.getElementById('template-import-progress');
+        const progressBar = document.getElementById('template-progress-bar');
+        const statusDiv = document.getElementById('template-import-status');
+        const resultsDiv = document.getElementById('template-import-results');
+        
+        progressDiv.classList.remove('hidden');
+        resultsDiv.classList.add('hidden');
+        
+        try {
+            const reader = new FileReader();
+            reader.onload = async (event) => {
+                const csv = event.target.result;
+                const lines = csv.split('\n').filter(line => line.trim());
+                const headers = lines[0].split(',').map(h => h.trim());
+                
+                // Validate headers
+                if (!headers.includes('Name') || !headers.includes('Link')) {
+                    throw new Error('CSV musi zawierać kolumny: Name, Link');
+                }
+                
+                const products = [];
+                for (let i = 1; i < lines.length; i++) {
+                    const values = lines[i].split(',').map(v => v.trim());
+                    if (values.length < 2) continue;
+                    
+                    const nameIdx = headers.indexOf('Name');
+                    const linkIdx = headers.indexOf('Link');
+                    const idIdx = headers.indexOf('ID');
+                    
+                    products.push({
+                        name: values[nameIdx],
+                        link: values[linkIdx],
+                        id: idIdx >= 0 ? values[idIdx] : i
+                    });
+                }
+                
+                console.log(`Parsed ${products.length} products from CSV`);
+                
+                let success = 0;
+                let errors = 0;
+                
+                // Import products
+                for (let i = 0; i < products.length; i++) {
+                    const product = products[i];
+                    const progress = ((i + 1) / products.length) * 100;
+                    progressBar.style.width = progress + '%';
+                    statusDiv.textContent = `Importowanie ${i + 1}/${products.length}: ${product.name}`;
+                    
+                    try {
+                        // Extract itemID from Weidian link
+                        const itemIdMatch = product.link.match(/itemID=(\d+)/);
+                        const itemId = itemIdMatch ? itemIdMatch[1] : null;
+                        
+                        if (!itemId) {
+                            console.warn('No itemID found in link:', product.link);
+                            errors++;
+                            continue;
+                        }
+                        
+                        // Create product object
+                        const newProduct = {
+                            name: product.name,
+                            price: 0, // Will be updated later
+                            category: 'Uncategorized',
+                            image_url: null,
+                            agent_links: JSON.stringify({
+                                weidian: product.link
+                            }),
+                            seller_name: 'Imported',
+                            created_at: new Date().toISOString(),
+                            is_pinned: false,
+                            clicks: 0,
+                            views: 0
+                        };
+                        
+                        // Save to Supabase
+                        if (typeof supabaseClient !== 'undefined' && supabaseClient) {
+                            const { error } = await supabaseClient
+                                .from('products')
+                                .insert([newProduct]);
+                            
+                            if (error) {
+                                console.error('Error inserting product:', error);
+                                errors++;
+                            } else {
+                                success++;
+                            }
+                        } else {
+                            console.warn('Supabase client not available');
+                            errors++;
+                        }
+                        
+                        // Small delay to avoid rate limiting
+                        await new Promise(resolve => setTimeout(resolve, 100));
+                        
+                    } catch (err) {
+                        console.error('Error importing product:', product.name, err);
+                        errors++;
+                    }
+                }
+                
+                // Show results
+                progressDiv.classList.add('hidden');
+                resultsDiv.classList.remove('hidden');
+                document.getElementById('template-success-count').textContent = success;
+                document.getElementById('template-error-count').textContent = errors;
+                
+                startBtn.innerHTML = '<i class="fa-solid fa-check"></i> Import Zakończony';
+                
+                if (typeof showToast === 'function') {
+                    showToast(`Zaimportowano ${success} produktów`, 'success');
+                }
+                
+                // Reload products grid
+                if (typeof loadProductsGrid === 'function') {
+                    setTimeout(() => loadProductsGrid(), 1000);
+                }
+                
+                // Reload admin products if in admin panel
+                if (typeof loadAdminProducts === 'function') {
+                    setTimeout(() => loadAdminProducts(), 1000);
+                }
+            };
+            
+            reader.readAsText(file);
+            
+        } catch (error) {
+            console.error('Import error:', error);
+            alert('Błąd importu: ' + error.message);
+            startBtn.disabled = false;
+            startBtn.innerHTML = '<i class="fa-solid fa-upload"></i> Rozpocznij Import';
+            progressDiv.classList.add('hidden');
+        }
+    });
+});
