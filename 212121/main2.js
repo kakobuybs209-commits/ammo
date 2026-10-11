@@ -57,12 +57,19 @@ window.switchAdminTab = function(targetName) {
 };
 
 window.adminLogout = function() {
+    console.log('🚪 Admin logout initiated');
+    
+    // Clear all admin session data
     sessionStorage.removeItem('admin_authenticated');
     sessionStorage.removeItem('admin_user');
     sessionStorage.removeItem('discord_user');
     localStorage.removeItem('admin_authenticated');
     localStorage.removeItem('admin_user');
-    window.location.href = '/admin992slg.html';
+    
+    console.log('✅ Session cleared');
+    
+    // Redirect to home page (not admin login)
+    window.location.href = '/index.html';
 };
 
 // Global: open Bulk Import modal
@@ -139,7 +146,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Auto-show Promo Popup on site visit (non-admin)
     const urlParams = new URLSearchParams(window.location.search);
-    const isAdminMode = urlParams.get('admin') === 'true' || 
+    let isAdminMode = urlParams.get('admin') === 'true' || 
                         sessionStorage.getItem('admin_authenticated') === 'true' ||
                         localStorage.getItem('admin_authenticated') === 'true';
     
@@ -150,6 +157,30 @@ document.addEventListener('DOMContentLoaded', () => {
         'localStorage': localStorage.getItem('admin_authenticated'),
         'isAdminMode': isAdminMode
     });
+    
+    // Validate Supabase session if admin mode is detected
+    if (isAdminMode && window.supabaseClient) {
+        (async () => {
+            try {
+                const { data: { session } } = await window.supabaseClient.auth.getSession();
+                if (!session && urlParams.get('admin') !== 'true') {
+                    // No valid session and not coming from login page
+                    console.log('⚠️ No valid Supabase session, clearing admin auth');
+                    localStorage.removeItem('admin_authenticated');
+                    sessionStorage.removeItem('admin_authenticated');
+                    isAdminMode = false;
+                    
+                    // Reload page to show normal view
+                    window.location.href = '/index.html';
+                    return;
+                } else {
+                    console.log('✅ Valid Supabase session found');
+                }
+            } catch (e) {
+                console.warn('Could not validate session:', e);
+            }
+        })();
+    }
     
     if (isAdminMode) {
         console.log('✅ Admin mode detected - showing admin panel');
@@ -825,12 +856,17 @@ document.addEventListener('DOMContentLoaded', () => {
     window.switchAdminTab = switchAdminTab;
 
     function adminLogout() {
+        console.log('🚪 Admin logout initiated');
+        
         sessionStorage.removeItem('admin_authenticated');
         sessionStorage.removeItem('admin_user');
         sessionStorage.removeItem('discord_user');
         localStorage.removeItem('admin_authenticated');
         localStorage.removeItem('admin_user');
-        window.location.href = '/admin992slg.html';
+        
+        console.log('✅ Session cleared');
+        
+        window.location.href = '/index.html';
     }
     window.adminLogout = adminLogout;
 
@@ -865,6 +901,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // Logout
     const adminLogoutBtn = document.getElementById('admin-logout-btn');
     if (adminLogoutBtn) adminLogoutBtn.addEventListener('click', async () => {
+        console.log('🚪 Admin logout initiated');
+        
         // Clear Discord session
         sessionStorage.removeItem('discord_user');
         sessionStorage.removeItem('admin_authenticated');
@@ -877,10 +915,15 @@ document.addEventListener('DOMContentLoaded', () => {
             await window.signOut();
         }
         
+        console.log('✅ Session cleared, redirecting to home');
+        
         document.getElementById('admin-panel').classList.add('hidden');
         const cont = document.querySelector('.container');
         if (cont) cont.style.display = 'block';
         document.body.classList.remove('admin-mode');
+        
+        // Redirect to home
+        window.location.href = '/index.html';
     });
 
     // Sellers Tags Scroll and Drag Logic
