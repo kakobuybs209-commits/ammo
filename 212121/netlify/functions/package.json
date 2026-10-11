@@ -1,8 +1,0 @@
-{
-  "name": "itemfinder-functions",
-  "version": "1.0.0",
-  "description": "Netlify Functions for ITEMFINDER",
-  "dependencies": {
-    "node-fetch": "^2.6.7"
-  }
-}

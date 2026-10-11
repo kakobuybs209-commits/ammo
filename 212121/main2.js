@@ -9402,7 +9402,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     let scrapedData = null;
                     
                     try {
-                        const scrapeResponse = await fetch('/.netlify/functions/scrape-weidian', {
+                        const scrapeResponse = await fetch('/api/scrape-weidian', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({ url: product.link })

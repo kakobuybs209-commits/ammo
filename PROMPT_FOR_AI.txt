@@ -1,0 +1,25 @@
+I need you to integrate the Template Import feature into my project.
+
+The TEMPLATE_IMPORT_PACKAGE folder contains all the files you need:
+- React component (TemplateImportModal.jsx)
+- Helper utilities (template-helpers.js)
+- API routes (sheets-route.js, template-route.js)
+- Complete documentation
+
+INSTRUCTIONS:
+1. Read QUICK_START_FOR_AI.md first - it has a step-by-step checklist
+2. Copy the frontend files to my project structure
+3. Copy the API routes (Next.js App Router)
+4. Integrate the modal into my admin panel
+5. Customize template-route.js for my database (Supabase/MongoDB/etc)
+6. Test with EXAMPLE_TEMPLATE.csv
+
+The feature allows bulk product import via:
+- Copy/paste from spreadsheets
+- CSV file upload
+- Google Sheets URL
+
+Follow the checklist in QUICK_START_FOR_AI.md exactly.
+Ask me if you need info about my database structure or existing scraper.
+
+Start by reading QUICK_START_FOR_AI.md and confirm you understand the integration steps.

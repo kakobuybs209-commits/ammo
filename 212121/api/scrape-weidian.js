@@ -1,50 +1,33 @@
-// Netlify Function: Scrape Weidian Product
-// Endpoint: /.netlify/functions/scrape-weidian
+// Vercel Serverless Function: Scrape Weidian Product
+// Endpoint: /api/scrape-weidian
 
-const fetch = require('node-fetch');
-
-exports.handler = async (event, context) => {
+export default async function handler(req, res) {
     // Enable CORS
-    const headers = {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Headers': 'Content-Type',
-        'Access-Control-Allow-Methods': 'POST, OPTIONS',
-        'Content-Type': 'application/json'
-    };
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
     // Handle OPTIONS request
-    if (event.httpMethod === 'OPTIONS') {
-        return { statusCode: 200, headers, body: '' };
+    if (req.method === 'OPTIONS') {
+        return res.status(200).end();
     }
 
     // Only allow POST
-    if (event.httpMethod !== 'POST') {
-        return {
-            statusCode: 405,
-            headers,
-            body: JSON.stringify({ error: 'Method not allowed' })
-        };
+    if (req.method !== 'POST') {
+        return res.status(405).json({ error: 'Method not allowed' });
     }
 
     try {
-        const { url } = JSON.parse(event.body);
+        const { url } = req.body;
 
         if (!url) {
-            return {
-                statusCode: 400,
-                headers,
-                body: JSON.stringify({ error: 'URL is required' })
-            };
+            return res.status(400).json({ error: 'URL is required' });
         }
 
         // Extract itemID from URL
         const itemIdMatch = url.match(/itemID[=%](\d+)/i);
         if (!itemIdMatch) {
-            return {
-                statusCode: 400,
-                headers,
-                body: JSON.stringify({ error: 'Invalid Weidian URL' })
-            };
+            return res.status(400).json({ error: 'Invalid Weidian URL' });
         }
 
         const itemId = itemIdMatch[1];
@@ -59,8 +42,7 @@ exports.handler = async (event, context) => {
                 'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
                 'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8',
                 'Referer': 'https://weidian.com/'
-            },
-            timeout: 10000
+            }
         });
 
         if (!response.ok) {
@@ -74,27 +56,19 @@ exports.handler = async (event, context) => {
 
         console.log('✅ Scraped:', productData);
 
-        return {
-            statusCode: 200,
-            headers,
-            body: JSON.stringify({
-                success: true,
-                data: productData
-            })
-        };
+        return res.status(200).json({
+            success: true,
+            data: productData
+        });
 
     } catch (error) {
         console.error('❌ Scraping error:', error);
-        return {
-            statusCode: 500,
-            headers,
-            body: JSON.stringify({
-                success: false,
-                error: error.message || 'Scraping failed'
-            })
-        };
+        return res.status(500).json({
+            success: false,
+            error: error.message || 'Scraping failed'
+        });
     }
-};
+}
 
 /**
  * Extract product data from Weidian HTML
