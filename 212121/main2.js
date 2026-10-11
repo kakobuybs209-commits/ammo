@@ -9403,7 +9403,6 @@ document.addEventListener('DOMContentLoaded', () => {
                         category: 'Uncategorized',
                         image: null,
                         link: product.link, // Store Weidian link
-                        agent: 'Weidian',
                         seller: 'Imported',
                         status: 'active',
                         clicks: 0,
