@@ -41,15 +41,26 @@ export default async function handler(req, res) {
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
                 'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
                 'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8',
-                'Referer': 'https://weidian.com/'
+                'Referer': 'https://weidian.com/',
+                'Cache-Control': 'no-cache'
             }
         });
 
         if (!response.ok) {
-            throw new Error(`HTTP ${response.status}`);
+            console.error('❌ HTTP Error:', response.status, response.statusText);
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
 
         const html = await response.text();
+        
+        // Debug: Log first 500 chars of HTML
+        console.log('📄 HTML preview:', html.substring(0, 500));
+
+        // Check if we got blocked
+        if (html.includes('请完成安全验证') || html.includes('安全验证') || html.length < 1000) {
+            console.error('🚫 Blocked by Weidian anti-bot');
+            throw new Error('Blocked by Weidian security. Try again later.');
+        }
 
         // Extract product data from HTML
         const productData = extractProductData(html, itemId);

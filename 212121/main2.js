@@ -9413,6 +9413,12 @@ document.addEventListener('DOMContentLoaded', () => {
                         if (scrapeResult.success && scrapeResult.data) {
                             scrapedData = scrapeResult.data;
                             console.log('✅ Scraped data:', scrapedData);
+                            
+                            // Validate scraped data
+                            if (!scrapedData.image || scrapedData.image.includes('店铺')) {
+                                console.warn('⚠️ Invalid image scraped (store logo), skipping scraping');
+                                scrapedData = null;
+                            }
                         } else {
                             console.warn('⚠️ Scraping failed:', scrapeResult.error);
                         }
@@ -9420,14 +9426,14 @@ document.addEventListener('DOMContentLoaded', () => {
                         console.warn('⚠️ Scraping error:', scrapeError.message);
                     }
                     
-                    // Create product object with scraped data or defaults
+                    // Create product object - use name from CSV, price/image from scraping
                     const newProduct = {
                         id: itemId,
-                        name: scrapedData?.name || product.name,
-                        price: scrapedData?.price || 299, // Default price if scraping fails
+                        name: product.name, // ✅ Use name from Google Sheets
+                        price: scrapedData?.price || 299, // Price from scraping or default
                         currency: scrapedData?.currency || 'CNY',
                         category: 'Shoes', // Default category
-                        image: scrapedData?.image || null,
+                        image: scrapedData?.image || null, // Image from scraping
                         link: product.link,
                         seller: 'Weidian',
                         status: 'active',
@@ -9437,20 +9443,23 @@ document.addEventListener('DOMContentLoaded', () => {
                         created_at: new Date().toISOString()
                     };
                     
-                    // Save to Supabase
+                    // Save to Supabase (upsert - insert or update if exists)
                     if (typeof window.supabaseClient !== 'undefined' && window.supabaseClient) {
                         const { data, error } = await window.supabaseClient
                             .from('products')
-                            .insert([newProduct]);
+                            .upsert([newProduct], { 
+                                onConflict: 'id',
+                                ignoreDuplicates: false 
+                            });
                         
                         if (error) {
-                            console.error('❌ Error inserting product:', product.name, error);
+                            console.error('❌ Error upserting product:', product.name, error);
                             if (errorLog.length < 5) {
                                 errorLog.push(`${product.name}: ${error.message || JSON.stringify(error)}`);
                             }
                             errors++;
                         } else {
-                            console.log('✅ Inserted:', product.name);
+                            console.log('✅ Upserted:', product.name);
                             success++;
                         }
                     } else {
