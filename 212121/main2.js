@@ -9153,27 +9153,51 @@ document.addEventListener('DOMContentLoaded', () => {
         
         const headers = lines[0].split(',').map(h => h.trim());
         
-        // Validate headers
-        if (!headers.includes('Name') || !headers.includes('Link')) {
-            throw new Error('CSV musi zawierać kolumny: Name, Link');
+        // Find column indices - support multiple languages
+        let nameIdx = -1;
+        let linkIdx = -1;
+        let idIdx = -1;
+        
+        headers.forEach((header, index) => {
+            const h = header.toLowerCase();
+            // Name column: Name, 产品名称, nazwa, product name
+            if (h.includes('name') || h.includes('产品名称') || h.includes('nazwa') || h.includes('产品')) {
+                nameIdx = index;
+            }
+            // Link column: Link, 微店链接, link, url
+            if (h.includes('link') || h.includes('链接') || h.includes('url') || h.includes('微店')) {
+                linkIdx = index;
+            }
+            // ID column: ID, 商品ID, id
+            if (h.includes('id') || h.includes('商品')) {
+                idIdx = index;
+            }
+        });
+        
+        // Validate - we need at least name and link
+        if (nameIdx === -1 || linkIdx === -1) {
+            console.error('Headers:', headers);
+            console.error('Found indices - Name:', nameIdx, 'Link:', linkIdx, 'ID:', idIdx);
+            throw new Error('CSV musi zawierać kolumny: Name, Link (lub ich odpowiedniki w innych językach)');
         }
         
         const products = [];
         for (let i = 1; i < lines.length; i++) {
             const values = lines[i].split(',').map(v => v.trim());
-            if (values.length < 2) continue;
-            
-            const nameIdx = headers.indexOf('Name');
-            const linkIdx = headers.indexOf('Link');
-            const idIdx = headers.indexOf('ID');
+            if (values.length < 2 || !values[nameIdx] || !values[linkIdx]) continue;
             
             products.push({
                 name: values[nameIdx],
                 link: values[linkIdx],
-                id: idIdx >= 0 ? values[idIdx] : i
+                id: idIdx >= 0 && values[idIdx] ? values[idIdx] : i
             });
         }
         
+        if (products.length === 0) {
+            throw new Error('Nie znaleziono żadnych produktów w CSV');
+        }
+        
+        console.log(`✅ Parsed ${products.length} products from CSV`);
         return products;
     }
     
