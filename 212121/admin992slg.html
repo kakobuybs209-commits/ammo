@@ -226,18 +226,23 @@
                     return;
                 }
 
-                // Zapisz sesję
+                // Zapisz sesję - użyj localStorage zamiast sessionStorage dla pewności
                 sessionStorage.setItem('admin_authenticated', 'true');
-                sessionStorage.setItem('admin_user', JSON.stringify({
+                localStorage.setItem('admin_authenticated', 'true');
+                
+                const userData = JSON.stringify({
                     email: data.user.email,
                     id: data.user.id
-                }));
+                });
+                sessionStorage.setItem('admin_user', userData);
+                localStorage.setItem('admin_user', userData);
 
                 showMsg('Zalogowano! Przekierowywanie...', 'success');
 
+                // Natychmiastowe przekierowanie bez opóźnienia
                 setTimeout(() => {
-                    window.location.href = '/index.html?admin=true';
-                }, 1000);
+                    window.location.replace('/index.html?admin=true');
+                }, 500);
 
             } catch (err) {
                 showMsg('Błąd połączenia. Spróbuj ponownie.', 'error');

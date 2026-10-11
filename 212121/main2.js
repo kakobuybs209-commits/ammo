@@ -60,6 +60,8 @@ window.adminLogout = function() {
     sessionStorage.removeItem('admin_authenticated');
     sessionStorage.removeItem('admin_user');
     sessionStorage.removeItem('discord_user');
+    localStorage.removeItem('admin_authenticated');
+    localStorage.removeItem('admin_user');
     window.location.href = '/admin992slg.html';
 };
 
@@ -99,7 +101,8 @@ window.exportProductsCSV = async function() {
 (function trackVisit() {
     try {
         // Don't count admin sessions as visits
-        if (sessionStorage.getItem('admin_authenticated') === 'true') return;
+        if (sessionStorage.getItem('admin_authenticated') === 'true' || 
+            localStorage.getItem('admin_authenticated') === 'true') return;
         const now = new Date();
         const today = now.toISOString().split('T')[0]; // 'YYYY-MM-DD'
         const hour = now.getHours();
@@ -136,7 +139,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Auto-show Promo Popup on site visit (non-admin)
     const urlParams = new URLSearchParams(window.location.search);
-    const isAdminMode = urlParams.get('admin') === 'true' || sessionStorage.getItem('admin_authenticated') === 'true';
+    const isAdminMode = urlParams.get('admin') === 'true' || 
+                        sessionStorage.getItem('admin_authenticated') === 'true' ||
+                        localStorage.getItem('admin_authenticated') === 'true';
+    
+    console.log('Admin mode check:', {
+        urlParam: urlParams.get('admin'),
+        sessionStorage: sessionStorage.getItem('admin_authenticated'),
+        localStorage: localStorage.getItem('admin_authenticated'),
+        isAdminMode: isAdminMode
+    });
     if (!isAdminMode) {
         setTimeout(() => {
             if (typeof showPromoPopup === 'function') {
@@ -809,6 +821,8 @@ document.addEventListener('DOMContentLoaded', () => {
         sessionStorage.removeItem('admin_authenticated');
         sessionStorage.removeItem('admin_user');
         sessionStorage.removeItem('discord_user');
+        localStorage.removeItem('admin_authenticated');
+        localStorage.removeItem('admin_user');
         window.location.href = '/admin992slg.html';
     }
     window.adminLogout = adminLogout;
@@ -847,6 +861,9 @@ document.addEventListener('DOMContentLoaded', () => {
         // Clear Discord session
         sessionStorage.removeItem('discord_user');
         sessionStorage.removeItem('admin_authenticated');
+        sessionStorage.removeItem('admin_user');
+        localStorage.removeItem('admin_authenticated');
+        localStorage.removeItem('admin_user');
         
         // Sign out from Supabase (if used)
         if (typeof window.signOut === 'function') {
