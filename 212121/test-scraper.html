@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Scraper API</title>
+    <style>
+        body { font-family: monospace; padding: 20px; background: #1a1a1a; color: #fff; }
+        input { width: 500px; padding: 10px; }
+        button { padding: 10px 20px; background: #4CAF50; color: white; border: none; cursor: pointer; }
+        button:hover { background: #45a049; }
+        #result { margin-top: 20px; padding: 20px; background: #2a2a2a; border-radius: 8px; }
+        img { max-width: 400px; margin-top: 10px; }
+        .error { color: #ff4444; }
+        .success { color: #4CAF50; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Test Weidian Scraper API</h1>
+    <p>Enter a Weidian URL to test the scraping:</p>
+    
+    <input type="text" id="url" placeholder="https://weidian.com/item.html?itemID=7510006593" value="https://weidian.com/item.html?itemID=7510006593">
+    <button onclick="testScraper()">Test Scraper</button>
+    
+    <div id="result"></div>
+    
+    <script>
+        async function testScraper() {
+            const url = document.getElementById('url').value;
+            const resultDiv = document.getElementById('result');
+            
+            resultDiv.innerHTML = '<p>⏳ Scraping...</p>';
+            
+            try {
+                const response = await fetch('/api/scrape-weidian', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ url })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    const data = result.data;
+                    resultDiv.innerHTML = `
+                        <h3 class="success">✅ Success!</h3>
+                        <p><strong>Name:</strong> ${data.name}</p>
+                        <p><strong>Price:</strong> ${data.price} ${data.currency}</p>
+                        <p><strong>Image URL:</strong> ${data.image || 'NULL'}</p>
+                        ${data.image ? `<img src="${data.image}" alt="${data.name}">` : '<p class="error">❌ No image found</p>'}
+                        <hr>
+                        <details>
+                            <summary>Raw JSON</summary>
+                            <pre>${JSON.stringify(result, null, 2)}</pre>
+                        </details>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `<p class="error">❌ Error: ${result.error}</p>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<p class="error">❌ Network Error: ${error.message}</p>`;
+            }
+        }
+    </script>
+</body>
+</html>
