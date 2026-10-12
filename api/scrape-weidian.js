@@ -135,10 +135,15 @@ function extractProductFromHTML(html, itemId) {
         image: null
     };
 
+    console.log('🔎 HTML length:', html.length);
+    console.log('🔎 Searching for __rocker-render-inject__...');
+
     // Find the JSON data in script tag (Weidian mobile site pattern)
+    // Pattern: id="__rocker-render-inject__" data-obj="ESCAPED_JSON_HERE"
     const scriptMatch = html.match(/id="__rocker-render-inject__"[^>]*data-obj="([^"]+)"/);
     
     if (scriptMatch) {
+        console.log('✅ Found __rocker-render-inject__');
         try {
             // Decode HTML entities
             const jsonStr = scriptMatch[1]
@@ -146,23 +151,35 @@ function extractProductFromHTML(html, itemId) {
                 .replace(/&amp;/g, '&')
                 .replace(/&lt;/g, '<')
                 .replace(/&gt;/g, '>')
-                .replace(/&#39;/g, "'");
+                .replace(/&#39;/g, "'")
+                .replace(/&#x27;/g, "'");
+            
+            console.log('📝 JSON string length:', jsonStr.length);
+            console.log('📝 JSON preview:', jsonStr.substring(0, 200));
             
             const jsonData = JSON.parse(jsonStr);
+            console.log('✅ Parsed JSON successfully');
+            
             const itemInfo = jsonData?.result?.default_model?.item_info;
             
             if (itemInfo) {
+                console.log('✅ Found item_info');
                 data.name = String(itemInfo.item_name || '').trim();
                 data.price = parseFloat(itemInfo.origin_price) || 0;
                 
+                console.log('📦 Product name:', data.name);
+                console.log('💰 Product price:', data.price);
+                
                 // Get main image
-                const mainImage = formatImageUrl(itemInfo.item_head);
+                const mainImage = itemInfo.item_head;
+                console.log('🖼️ Main image:', mainImage);
                 
                 // Try to get variant images (better quality, multiple colors)
                 const variantImages = [];
                 const skuProperties = jsonData?.result?.default_model?.sku_properties;
                 
                 if (skuProperties?.attr_list) {
+                    console.log('🎨 Found attr_list, checking for variant images...');
                     const imageAttr = skuProperties.attr_list.find(attr =>
                         attr.attr_values?.some(v => v.img)
                     );
@@ -170,24 +187,34 @@ function extractProductFromHTML(html, itemId) {
                     if (imageAttr?.attr_values) {
                         for (const val of imageAttr.attr_values) {
                             if (val.img) {
-                                variantImages.push(formatImageUrl(val.img));
+                                variantImages.push(val.img);
+                                console.log('🎨 Found variant image:', val.img);
                             }
                         }
                     }
                 }
                 
                 // Use variant image if available, otherwise main image
-                data.image = variantImages.length > 0 ? variantImages[0] : mainImage;
+                const bestImage = variantImages.length > 0 ? variantImages[0] : mainImage;
+                data.image = formatImageUrl(bestImage);
                 
-                console.log('📦 Extracted from JSON:', { name: data.name, price: data.price, hasImage: !!data.image });
+                console.log('✅ Final image URL:', data.image);
+            } else {
+                console.warn('⚠️ No item_info in JSON');
+                console.log('📄 JSON structure:', Object.keys(jsonData || {}));
             }
         } catch (e) {
-            console.warn('Failed to parse JSON from script tag:', e.message);
+            console.error('❌ Failed to parse JSON from script tag:', e.message);
+            console.error('Stack:', e.stack);
         }
+    } else {
+        console.warn('⚠️ __rocker-render-inject__ not found in HTML');
+        console.log('📄 HTML preview (first 1000 chars):', html.substring(0, 1000));
     }
 
     // Fallback: try meta tags if JSON parsing failed
-    if (!data.name || !data.price) {
+    if (!data.name || !data.price || !data.image) {
+        console.log('🔄 Trying fallback meta tags extraction...');
         const fallbackData = extractFromMetaTags(html);
         if (!data.name) data.name = fallbackData.name;
         if (!data.price) data.price = fallbackData.price;
