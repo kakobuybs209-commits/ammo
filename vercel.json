@@ -7,6 +7,9 @@
     },
     "api/scrape-bulk.js": {
       "maxDuration": 60
+    },
+    "api/template-import.js": {
+      "maxDuration": 300
     }
   }
 }
