@@ -35,14 +35,15 @@ export default async function handler(req, res) {
 
         console.log('🔍 Scraping:', weidianUrl);
 
-        // Fetch the page with browser-like headers
-        const response = await fetch(weidianUrl, {
+        // Use proxy to bypass anti-bot (Vercel IPs are blocked by Weidian)
+        const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(weidianUrl)}`;
+        
+        console.log('📡 Using proxy:', proxyUrl);
+
+        // Fetch the page through proxy
+        const response = await fetch(proxyUrl, {
             headers: {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-                'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8',
-                'Referer': 'https://weidian.com/',
-                'Cache-Control': 'no-cache'
+                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8'
             }
         });
 
