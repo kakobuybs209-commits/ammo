@@ -2,6 +2,9 @@
   "functions": {
     "api/scrape-weidian.js": {
       "maxDuration": 30
+    },
+    "api/scrape-bulk.js": {
+      "maxDuration": 60
     }
   },
   "rewrites": [
