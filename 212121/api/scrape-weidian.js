@@ -1,5 +1,9 @@
 // Vercel Serverless Function: Scrape Weidian Product
 // Endpoint: /api/scrape-weidian
+// Based on scraper-core.js documentation
+
+// CRITICAL: iPhone User-Agent required to get product images instead of store logo
+const USER_AGENT = 'Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6 Mobile/15E148 Safari/604.1';
 
 export default async function handler(req, res) {
     // Enable CORS
@@ -24,26 +28,23 @@ export default async function handler(req, res) {
             return res.status(400).json({ error: 'URL is required' });
         }
 
-        // Extract itemID from URL
-        const itemIdMatch = url.match(/itemID[=%](\d+)/i);
-        if (!itemIdMatch) {
-            return res.status(400).json({ error: 'Invalid Weidian URL' });
+        // Extract itemID from URL (supports various formats)
+        const itemId = extractItemId(url);
+        if (!itemId) {
+            return res.status(400).json({ error: 'Invalid Weidian URL - no itemID found' });
         }
 
-        const itemId = itemIdMatch[1];
         const weidianUrl = `https://weidian.com/item.html?itemID=${itemId}`;
 
         console.log('🔍 Scraping:', weidianUrl);
 
-        // Use proxy to bypass anti-bot (Vercel IPs are blocked by Weidian)
-        const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(weidianUrl)}`;
-        
-        console.log('📡 Using proxy:', proxyUrl);
-
-        // Fetch the page through proxy
-        const response = await fetch(proxyUrl, {
+        // Fetch with MOBILE User-Agent (critical for getting product images)
+        const response = await fetch(weidianUrl, {
             headers: {
-                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8'
+                'User-Agent': USER_AGENT,
+                'Referer': 'https://weidian.com/',
+                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+                'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8'
             }
         });
 
@@ -54,17 +55,16 @@ export default async function handler(req, res) {
 
         const html = await response.text();
         
-        // Debug: Log first 500 chars of HTML
-        console.log('📄 HTML preview:', html.substring(0, 500));
+        console.log('📄 HTML length:', html.length);
 
-        // Check if we got blocked
+        // Check if blocked
         if (html.includes('请完成安全验证') || html.includes('安全验证') || html.length < 1000) {
             console.error('🚫 Blocked by Weidian anti-bot');
-            throw new Error('Blocked by Weidian security. Try again later.');
+            throw new Error('Blocked by Weidian security');
         }
 
-        // Extract product data from HTML
-        const productData = extractProductData(html, itemId);
+        // Extract product data from JSON embedded in page
+        const productData = extractProductFromHTML(html, itemId);
 
         console.log('✅ Scraped:', productData);
 
@@ -83,9 +83,50 @@ export default async function handler(req, res) {
 }
 
 /**
- * Extract product data from Weidian HTML
+ * Extract itemID from various URL formats
  */
-function extractProductData(html, itemId) {
+function extractItemId(input) {
+    const raw = String(input || '');
+
+    // Decode URL if needed (may be encoded multiple times)
+    let decoded = raw;
+    for (let i = 0; i < 3; i++) {
+        try {
+            const next = decodeURIComponent(decoded);
+            if (next === decoded) break;
+            decoded = next;
+        } catch {
+            break;
+        }
+    }
+
+    // Search for itemID in both versions
+    for (const value of [raw, decoded]) {
+        const match =
+            value.match(/itemID=(\d+)/i) ||
+            value.match(/itemID%3D(\d+)/i) ||
+            value.match(/\/item\/(\d+)/i);
+        if (match) return match[1];
+    }
+
+    return null;
+}
+
+/**
+ * Format image URL with protocol and dimensions
+ */
+function formatImageUrl(imageUrl) {
+    if (!imageUrl) return null;
+    const absolute = imageUrl.startsWith('http') ? imageUrl : `https:${imageUrl}`;
+    const sep = absolute.includes('?') ? '&' : '?';
+    return `${absolute}${sep}w=400&h=400`;
+}
+
+/**
+ * Extract product data from HTML
+ * Uses the #__rocker-render-inject__ script tag with JSON data
+ */
+function extractProductFromHTML(html, itemId) {
     const data = {
         id: itemId,
         name: '',
@@ -94,130 +135,115 @@ function extractProductData(html, itemId) {
         image: null
     };
 
-    // Method 1: Try to extract from JSON-LD structured data
-    const jsonLdMatch = html.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/);
-    if (jsonLdMatch) {
+    // Find the JSON data in script tag (Weidian mobile site pattern)
+    const scriptMatch = html.match(/id="__rocker-render-inject__"[^>]*data-obj="([^"]+)"/);
+    
+    if (scriptMatch) {
         try {
-            const jsonData = JSON.parse(jsonLdMatch[1]);
-            if (jsonData.name) data.name = cleanText(jsonData.name);
-            if (jsonData.offers && jsonData.offers.price) {
-                data.price = parseFloat(jsonData.offers.price);
-            }
-            if (jsonData.image) {
-                data.image = Array.isArray(jsonData.image) ? jsonData.image[0] : jsonData.image;
-            }
-        } catch (e) {
-            console.warn('Failed to parse JSON-LD:', e.message);
-        }
-    }
-
-    // Method 2: Extract from meta tags
-    if (!data.name) {
-        const ogTitleMatch = html.match(/<meta property="og:title" content="([^"]+)"/);
-        const titleMatch = html.match(/<title>([^<]+)<\/title>/);
-        data.name = ogTitleMatch ? cleanText(ogTitleMatch[1]) : 
-                    titleMatch ? cleanText(titleMatch[1].replace(/[-_]微店/, '')) : 
-                    'Unnamed Product';
-    }
-
-    if (!data.image) {
-        const ogImageMatch = html.match(/<meta property="og:image" content="([^"]+)"/);
-        if (ogImageMatch) {
-            data.image = ogImageMatch[1];
-        }
-    }
-
-    // Method 3: Extract price from various patterns
-    if (data.price === 0) {
-        // Try price in meta tags
-        const priceMatch = html.match(/<meta property="og:price:amount" content="([^"]+)"/);
-        if (priceMatch) {
-            data.price = parseFloat(priceMatch[1]);
-        }
-        
-        // Try price in HTML (¥199, ¥199.00, 199元, etc.)
-        if (data.price === 0) {
-            const pricePatterns = [
-                // Chinese Yuan symbols
-                /[¥￥][\s]*([0-9]+\.?[0-9]*)/,
-                /([0-9]+\.?[0-9]*)[\s]*元/,
-                // JSON price fields
-                /"price":\s*"?([0-9]+\.?[0-9]*)"?/i,
-                /"productPrice":\s*"?([0-9]+\.?[0-9]*)"?/i,
-                /"itemPrice":\s*"?([0-9]+\.?[0-9]*)"?/i,
-                // Data attributes
-                /data-price="([0-9]+\.?[0-9]*)"/i,
-                // Class-based patterns
-                /class="[^"]*price[^"]*"[^>]*>[\s¥￥]*([0-9]+\.?[0-9]*)/i
-            ];
+            // Decode HTML entities
+            const jsonStr = scriptMatch[1]
+                .replace(/&quot;/g, '"')
+                .replace(/&amp;/g, '&')
+                .replace(/&lt;/g, '<')
+                .replace(/&gt;/g, '>')
+                .replace(/&#39;/g, "'");
             
-            for (const pattern of pricePatterns) {
-                const match = html.match(pattern);
-                if (match) {
-                    const parsed = parseFloat(match[1]);
-                    if (parsed > 0 && parsed < 100000) { // Sanity check
-                        data.price = parsed;
-                        break;
+            const jsonData = JSON.parse(jsonStr);
+            const itemInfo = jsonData?.result?.default_model?.item_info;
+            
+            if (itemInfo) {
+                data.name = String(itemInfo.item_name || '').trim();
+                data.price = parseFloat(itemInfo.origin_price) || 0;
+                
+                // Get main image
+                const mainImage = formatImageUrl(itemInfo.item_head);
+                
+                // Try to get variant images (better quality, multiple colors)
+                const variantImages = [];
+                const skuProperties = jsonData?.result?.default_model?.sku_properties;
+                
+                if (skuProperties?.attr_list) {
+                    const imageAttr = skuProperties.attr_list.find(attr =>
+                        attr.attr_values?.some(v => v.img)
+                    );
+                    
+                    if (imageAttr?.attr_values) {
+                        for (const val of imageAttr.attr_values) {
+                            if (val.img) {
+                                variantImages.push(formatImageUrl(val.img));
+                            }
+                        }
                     }
                 }
+                
+                // Use variant image if available, otherwise main image
+                data.image = variantImages.length > 0 ? variantImages[0] : mainImage;
+                
+                console.log('📦 Extracted from JSON:', { name: data.name, price: data.price, hasImage: !!data.image });
             }
+        } catch (e) {
+            console.warn('Failed to parse JSON from script tag:', e.message);
         }
     }
 
-    // Method 4: Extract image from common patterns
-    if (!data.image) {
-        const imagePatterns = [
-            // Weidian mobile site patterns
-            /"mainImage":"([^"]+)"/,
-            /"img":"([^"]+)"/,
-            /"imgUrl":"([^"]+)"/,
-            /"thumb":"([^"]+)"/,
-            // Standard img tags
-            /<img[^>]+class="[^"]*swiper-slide-img[^"]*"[^>]+src="([^"]+)"/i,
-            /<img[^>]+class="[^"]*goods-img[^"]*"[^>]+src="([^"]+)"/i,
-            /<img[^>]+class="[^"]*product-img[^"]*"[^>]+src="([^"]+)"/i,
-            // Data attributes
-            /data-src="(https?:\/\/[^"]+\.(?:jpg|jpeg|png|webp)[^"]*)"/i,
-            /data-original="(https?:\/\/[^"]+\.(?:jpg|jpeg|png|webp)[^"]*)"/i,
-            // Generic img with URL
-            /<img[^>]+src="(https?:\/\/[^"]+\.(?:jpg|jpeg|png|webp)[^"]*)"/i,
-            // Weidian CDN patterns
-            /https?:\/\/(?:si\.geilicdn\.com|img\.alicdn\.com|gdp\.alicdn\.com|gw\.alicdn\.com)\/[^"\s]+\.(?:jpg|jpeg|png|webp)/i
-        ];
-        
-        for (const pattern of imagePatterns) {
-            const match = html.match(pattern);
-            if (match) {
-                let imageUrl = match[1] || match[0];
-                imageUrl = imageUrl.replace(/\\u002F/g, '/').replace(/\\/g, '');
-                
-                // Convert to HTTPS if needed
-                if (imageUrl.startsWith('//')) {
-                    imageUrl = 'https:' + imageUrl;
-                }
-                
-                // Skip if it's the store logo (contains 店铺 or specific patterns)
-                if (!imageUrl.includes('店铺') && !imageUrl.includes('default') && !imageUrl.includes('avatar')) {
-                    data.image = imageUrl;
-                    break;
-                }
-            }
-        }
+    // Fallback: try meta tags if JSON parsing failed
+    if (!data.name || !data.price) {
+        const fallbackData = extractFromMetaTags(html);
+        if (!data.name) data.name = fallbackData.name;
+        if (!data.price) data.price = fallbackData.price;
+        if (!data.image) data.image = fallbackData.image;
     }
 
-    // Fallback: If still no price, set default
+    // Final fallback for price
     if (data.price === 0) {
-        data.price = 299; // Default fallback price
+        data.price = 299; // Default fallback
     }
-
-    // Clean up name
-    data.name = data.name.replace(/[-_]微店.*$/, '').trim() || 'Unnamed Product';
 
     return data;
 }
 
 /**
- * Clean text by removing extra whitespace and HTML entities
+ * Fallback: Extract from meta tags
+ */
+function extractFromMetaTags(html) {
+    const data = { name: '', price: 0, image: null };
+
+    // Extract name
+    const ogTitleMatch = html.match(/<meta property="og:title" content="([^"]+)"/);
+    const titleMatch = html.match(/<title>([^<]+)<\/title>/);
+    data.name = ogTitleMatch ? cleanText(ogTitleMatch[1]) : 
+                titleMatch ? cleanText(titleMatch[1].replace(/[-_]微店/, '')) : 
+                'Unnamed Product';
+
+    // Extract price
+    const pricePatterns = [
+        /<meta property="og:price:amount" content="([^"]+)"/,
+        /[¥￥][\s]*([0-9]+\.?[0-9]*)/,
+        /([0-9]+\.?[0-9]*)[\s]*元/
+    ];
+    
+    for (const pattern of pricePatterns) {
+        const match = html.match(pattern);
+        if (match) {
+            const parsed = parseFloat(match[1]);
+            if (parsed > 0 && parsed < 100000) {
+                data.price = parsed;
+                break;
+            }
+        }
+    }
+
+    // Extract image
+    const ogImageMatch = html.match(/<meta property="og:image" content="([^"]+)"/);
+    if (ogImageMatch) {
+        data.image = ogImageMatch[1];
+    }
+
+    return data;
+}
+
+/**
+ * Clean text
  */
 function cleanText(text) {
     return text
