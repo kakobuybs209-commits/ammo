@@ -262,18 +262,51 @@
             }
             
             try {
-                if (typeof bulkImportProducts !== 'function') {
-                    showStatus('import-status', 'Błąd: Funkcja bulkImportProducts nie istnieje', 'error');
+                if (typeof bulkImportProductsWithScraping !== 'function') {
+                    showStatus('import-status', 'Błąd: Funkcja bulkImportProductsWithScraping nie istnieje. Używam starej metody bez scrapowania.', 'error');
+                    
+                    // Fallback to old method
+                    if (typeof bulkImportProducts !== 'function') {
+                        showStatus('import-status', 'Błąd: Funkcja bulkImportProducts nie istnieje', 'error');
+                        return;
+                    }
+                    
+                    showStatus('import-status', 'Importowanie bez scrapowania...', 'info');
+                    document.getElementById('import-btn').disabled = true;
+                    
+                    const results = await bulkImportProducts(parsedProducts, (progress) => {
+                        showStatus('import-status', 
+                            `Importowanie ${progress.current}/${progress.total}: ${progress.product}`, 
+                            'info');
+                    });
+                    
+                    const resultsText = `
+Sukces: ${results.success}
+Błędy: ${results.failed}
+
+${results.errors.length > 0 ? 'Błędy:\n' + results.errors.map(e => `- ${e.product}: ${e.error}`).join('\n') : ''}
+                    `.trim();
+                    
+                    document.getElementById('import-results').textContent = resultsText;
+                    showStatus('import-status', 
+                        `Import zakończony! Sukces: ${results.success}, Błędy: ${results.failed}`, 
+                        results.failed > 0 ? 'error' : 'success');
+                    
+                    document.getElementById('import-btn').disabled = false;
                     return;
                 }
                 
-                showStatus('import-status', 'Importowanie...', 'info');
+                showStatus('import-status', 'Scrapowanie i importowanie...', 'info');
                 document.getElementById('import-btn').disabled = true;
                 
-                const results = await bulkImportProducts(parsedProducts, (progress) => {
-                    showStatus('import-status', 
-                        `Importowanie ${progress.current}/${progress.total}: ${progress.product}`, 
-                        'info');
+                const results = await bulkImportProductsWithScraping(parsedProducts, (progress) => {
+                    if (progress.status === 'scraping') {
+                        showStatus('import-status', progress.product, 'info');
+                    } else {
+                        showStatus('import-status', 
+                            `[${progress.current}/${progress.total}] ${progress.product}`, 
+                            progress.status === 'error' ? 'error' : 'info');
+                    }
                 });
                 
                 const resultsText = `

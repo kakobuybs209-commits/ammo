@@ -164,7 +164,105 @@ async function importProductsFromFile(file) {
 }
 
 /**
- * Bulk import products to Supabase
+ * Scrape products using template import API
+ */
+async function scrapeProductsFromTemplate(products) {
+    try {
+        const response = await fetch('/api/template-import', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                products: products.map(p => ({
+                    id: p.id,
+                    name: p.name
+                }))
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error(`API error: ${response.status}`);
+        }
+
+        const data = await response.json();
+        return data.results || [];
+    } catch (error) {
+        console.error('Scraping error:', error);
+        return [];
+    }
+}
+
+/**
+ * Bulk import products to Supabase WITH SCRAPING
+ */
+async function bulkImportProductsWithScraping(products, onProgress) {
+    const results = {
+        success: 0,
+        failed: 0,
+        errors: []
+    };
+    
+    // Step 1: Scrape all products
+    if (onProgress) {
+        onProgress({
+            current: 0,
+            total: products.length,
+            product: 'Scraping products...',
+            status: 'scraping'
+        });
+    }
+    
+    const scrapedResults = await scrapeProductsFromTemplate(products);
+    
+    // Step 2: Save scraped products to database
+    for (let i = 0; i < scrapedResults.length; i++) {
+        try {
+            const result = scrapedResults[i];
+            
+            if (result.success && result.data) {
+                await saveProductToDB(result.data);
+                results.success++;
+                
+                if (onProgress) {
+                    onProgress({
+                        current: i + 1,
+                        total: scrapedResults.length,
+                        product: result.data.name,
+                        status: 'success'
+                    });
+                }
+            } else {
+                results.failed++;
+                results.errors.push({
+                    product: result.name || 'Unknown',
+                    error: result.error || 'Scraping failed'
+                });
+                
+                if (onProgress) {
+                    onProgress({
+                        current: i + 1,
+                        total: scrapedResults.length,
+                        product: result.name || 'Unknown',
+                        status: 'error',
+                        error: result.error
+                    });
+                }
+            }
+        } catch (error) {
+            results.failed++;
+            results.errors.push({
+                product: scrapedResults[i].name || 'Unknown',
+                error: error.message
+            });
+        }
+    }
+    
+    return results;
+}
+
+/**
+ * Bulk import products to Supabase (WITHOUT scraping - direct import)
  */
 async function bulkImportProducts(products, onProgress) {
     const results = {
