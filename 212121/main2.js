@@ -17,6 +17,11 @@ window.showView = function showView(viewId) {
     window.scrollTo(0, 0);
     const footer = document.getElementById('site-footer');
     if (footer) footer.style.display = viewId === 'home-view' ? 'block' : 'none';
+    
+    // Clear hash from URL when switching views (unless it's a product detail view)
+    if (window.location.hash && !viewId.includes('product')) {
+        history.replaceState(null, '', window.location.pathname + window.location.search);
+    }
 };
 
 // Global Admin Tab Switcher & Logout
