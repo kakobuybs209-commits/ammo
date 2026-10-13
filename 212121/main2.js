@@ -2235,7 +2235,6 @@ async function addProduct(event) {
         image: document.getElementById('product-image').value.trim(),
         category: document.getElementById('product-category').value,
         link: document.getElementById('product-link').value.trim(),
-        status: document.getElementById('product-status')?.value || 'active',
         popular: document.getElementById('product-popular')?.checked || false,
         clicks: 0
     };
@@ -2377,15 +2376,6 @@ async function loadAdminProducts() {
             return pBatch === batchFilter || pTags.includes(batchFilter) || pName.includes(batchFilter);
         });
     }
-    
-    // Apply status filter
-    if (adminFilterState.status && adminFilterState.status !== 'all') {
-        if (adminFilterState.status === 'pinned') {
-            products = products.filter(p => p.pinned || p.is_pinned || p.popular);
-        } else if (adminFilterState.status === 'normal') {
-            products = products.filter(p => !(p.pinned || p.is_pinned || p.popular));
-        }
-    }
 
     // Apply sorting
     if (adminFilterState.sort === 'price-asc') {
@@ -2430,7 +2420,6 @@ async function loadAdminProducts() {
             </td>
             <td><span class="badge">${product.category}</span></td>
             <td>${product.price} ${product.currency}</td>
-            <td><span class="status-badge status-${product.status}">${product.status === 'active' ? 'In Stock' : 'Dead Link'}</span></td>
             <td>${product.clicks || 0}</td>
             <td>
                 <div style="display: flex; gap: 0.5rem;">
