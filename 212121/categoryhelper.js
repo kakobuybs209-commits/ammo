@@ -394,7 +394,11 @@ const CATEGORY_SLUG_TO_LABEL = {
     'headwear': 'Accessories',
     'belts': 'Accessories',
     'accessories': 'Accessories',
-    'bags-backpacks': 'Bags & Backpacks'
+    'bags-backpacks': 'Bags',
+    'sweaters': 'Sweaters',
+    'sportswear': 'Sportswear',
+    'underwear': 'Underwear',
+    'watches': 'Watches'
 };
 
 // Returns the stored category label for a product name, or '' when the name
