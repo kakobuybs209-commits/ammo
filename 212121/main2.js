@@ -8073,7 +8073,11 @@ function initProductDetailListeners() {
     // Back button (pdv-back-btn) → navigateBackFromDetail()
     const backBtn = document.getElementById('pdv-back-btn');
     if (backBtn) {
-        backBtn.onclick = navigateBackFromDetail;
+        // Remove old listeners
+        const newBtn = backBtn.cloneNode(true);
+        backBtn.parentNode.replaceChild(newBtn, backBtn);
+        // Add new listener
+        newBtn.addEventListener('click', navigateBackFromDetail);
     }
 
     // Save button (pdv-save-btn) → saveProduct(currentProduct.id)
