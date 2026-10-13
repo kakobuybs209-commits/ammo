@@ -3974,7 +3974,7 @@ async function applyFiltersAndSort() {
         ? all
         : all.filter(p => p.category === category);
     
-    // 2. Apply pill filter (women/recommended/newest)
+    // 2. Apply pill filter (women only)
     const pillFilter = window._activePillFilter;
     if (pillFilter === 'women') {
         // Filter products for women (categories like bags, accessories, certain shoes)
@@ -3983,23 +3983,15 @@ async function applyFiltersAndSort() {
             womenCategories.includes(p.category) || 
             (p.name && (p.name.toLowerCase().includes('women') || p.name.toLowerCase().includes('ladies')))
         );
-    } else if (pillFilter === 'recommended') {
-        // Filter only popular products
-        filtered = filtered.filter(p => p.popular === true);
-    } else if (pillFilter === 'newest') {
-        // Sort by newest (highest ID = newest)
-        filtered = [...filtered].sort((a, b) => (b.id || '').localeCompare(a.id || ''));
     }
     
     // 3. Filter by price
     const priceRange = getSelectedPriceRange();
     filtered = filterByPrice(filtered, priceRange);
     
-    // 4. Sort (only if newest pill is not active)
-    if (pillFilter !== 'newest') {
-        const sortBy = getSelectedSort();
-        filtered = sortProducts(filtered, sortBy);
-    }
+    // 4. Sort
+    const sortBy = getSelectedSort();
+    filtered = sortProducts(filtered, sortBy);
     
     // 5. Display
     initInfinityScroll(filtered);
