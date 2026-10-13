@@ -3499,18 +3499,6 @@ function buildProductCard(product) {
     // Sprzedawca produktu — pokazywany w wierszu opisowym
     const sellerName = product.agent || product.seller || 'RANDOM';
 
-    // Agent wybrany w Ustawieniach — jego skrót trafia na biały kwadrat
-    const selectedAgent = getSelectedAgentMeta();
-    const agentInner = selectedAgent.logo
-        ? `<img src="${selectedAgent.logo}" alt="${selectedAgent.name}">`
-        : `<span class="pc-agent-text">${selectedAgent.abbr}</span>`;
-
-    // Ocena 1-10 — z produktu, a gdy jej nie ma, wyliczona z liczby wyświetleń
-    const rating = product.rating != null
-        ? product.rating
-        : Math.min(10, Math.max(1, Math.round(views / 40) + 5));
-    const ratingClass = rating >= 8 ? 'pc-rating pc-rating--high' : 'pc-rating';
-
     card.innerHTML = `
         <div class="product-card__img-wrap">
             <img src="${imgSrc}" alt="${product.name}" loading="lazy">
@@ -3524,16 +3512,12 @@ function buildProductCard(product) {
             </div>
             <div class="pc-row-meta">
                 <span class="pc-sub">${product.category || ''} · ${sellerName}</span>
-                <span class="${ratingClass}"><i class="fa-solid fa-star"></i> ${rating}/10</span>
             </div>
         </div>
         <div class="pc-actions">
-            <button class="pc-btn-details" type="button">
-                <i class="fa-regular fa-eye"></i>
-                <span>Zobacz szczegóły</span>
-            </button>
-            <button class="pc-btn-agent" type="button" data-agent-btn data-agent-raw="${product.link || ''}" title="Kup przez ${selectedAgent.name}">
-                ${agentInner}
+            <button class="pc-btn-buy" type="button" data-agent-raw="${product.link || ''}" title="Zobacz produkt">
+                <i class="fa-solid fa-bag-shopping"></i>
+                <span>Zobacz produkt</span>
             </button>
             <button class="pc-btn-bag" type="button" title="Kopiuj link do produktu">
                 <i class="fa-solid fa-share-nodes"></i>
@@ -3543,20 +3527,8 @@ function buildProductCard(product) {
 
     card.style.cursor = 'pointer';
 
-    const openDetail = () => showProductDetail(product.id);
-
-    // Klik na obrazek i sekcję informacyjną otwiera szczegóły
-    card.querySelector('.product-card__img-wrap').addEventListener('click', openDetail);
-    card.querySelector('.pc-info').addEventListener('click', openDetail);
-
-    // Zobacz szczegóły
-    card.querySelector('.pc-btn-details').addEventListener('click', (e) => {
-        e.stopPropagation();
-        openDetail();
-    });
-
-    // Agent — otwiera link przepuszczony przez agenta wybranego w Ustawieniach
-    card.querySelector('.pc-btn-agent').addEventListener('click', (e) => {
+    // Główny przycisk "Zobacz produkt" - otwiera link przez agenta
+    card.querySelector('.pc-btn-buy').addEventListener('click', (e) => {
         e.stopPropagation();
         const raw = product.link || '';
         if (!raw || raw === '#') return;
@@ -3564,7 +3536,7 @@ function buildProductCard(product) {
         if (url) window.open(url, '_blank', 'noopener,noreferrer');
     });
 
-    // Kopiuj link strony do produktu (np. itemfinder.pl/#/ralph-lauren-tshirt)
+    // Kopiuj link strony do produktu
     card.querySelector('.pc-btn-bag').addEventListener('click', (e) => {
         e.stopPropagation();
         const shareUrl = getProductShareUrl(product);
