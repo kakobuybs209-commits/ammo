@@ -7888,9 +7888,10 @@ function navigateBackFromDetail() {
         window.scrollTo(0, ProductDetailView.previousScrollPosition);
     }, 0);
     
-    // Update URL by calling history.back() if URL starts with #/ or #product/
+    // Update URL - clear the hash instead of using history.back()
     if (window.location.hash.startsWith('#/') || window.location.hash.startsWith('#product/')) {
-        history.back();
+        // Replace current history entry with empty hash to avoid adding to history
+        history.replaceState(null, '', window.location.pathname + window.location.search);
     }
 }
 
