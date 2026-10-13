@@ -2415,7 +2415,7 @@ async function loadAdminProducts() {
             <td>
                 <div style="display: flex; align-items: center; gap: 1rem;">
                     <img src="${product.image}" alt="${product.name}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 8px;">
-                    <span>${product.name}</span>
+                    <span class="product-name-editable" data-product-id="${product.id}" ondblclick="makeProductNameEditable(this, '${product.id}')" style="cursor: text; flex: 1;">${product.name}</span>
                 </div>
             </td>
             <td><span class="badge">${product.category}</span></td>
@@ -3114,6 +3114,76 @@ async function deleteProduct(id) {
         showToast('Błąd podczas usuwania produktu', 'error');
     }
 }
+
+// Inline edit product name - double click to edit
+window.makeProductNameEditable = async function(spanElement, productId) {
+    // Prevent multiple edits at once
+    if (spanElement.querySelector('input')) return;
+    
+    const currentName = spanElement.textContent;
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.value = currentName;
+    input.style.cssText = 'width: 100%; padding: 0.5rem; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 6px; color: #fff; font-family: inherit; font-size: inherit;';
+    
+    // Replace span content with input
+    spanElement.textContent = '';
+    spanElement.appendChild(input);
+    input.focus();
+    input.select();
+    
+    // Save on Enter or blur
+    const saveEdit = async () => {
+        const newName = input.value.trim();
+        
+        if (newName && newName !== currentName) {
+            try {
+                // Update product name in database
+                const products = await getProducts();
+                const product = products.find(p => p.id === productId);
+                
+                if (product) {
+                    product.name = newName;
+                    
+                    // Update in Supabase
+                    if (window.supabaseClient) {
+                        await window.supabaseClient
+                            .from('products')
+                            .update({ name: newName })
+                            .eq('id', productId);
+                    }
+                    
+                    // Update local storage
+                    const local = readLocalProducts();
+                    const localProduct = local.find(p => p.id === productId);
+                    if (localProduct) {
+                        localProduct.name = newName;
+                        writeLocalProducts(local);
+                    }
+                    
+                    showToast('Nazwa produktu zaktualizowana', 'success');
+                }
+            } catch (error) {
+                console.error('Error updating product name:', error);
+                showToast('Błąd podczas aktualizacji nazwy', 'error');
+            }
+        }
+        
+        // Restore span with new or original name
+        spanElement.textContent = newName || currentName;
+    };
+    
+    input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            saveEdit();
+        } else if (e.key === 'Escape') {
+            spanElement.textContent = currentName;
+        }
+    });
+    
+    input.addEventListener('blur', saveEdit);
+};
 
 // Edit Product - opens modal with product data
 async function editProduct(id) {
